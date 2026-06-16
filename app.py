@@ -166,6 +166,9 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     code_col_w = 42 * mm
     municipio_label_w = 18 * mm
     area_label_w = 38 * mm
+    soja_label_w = 33 * mm
+    sisveg_label_w = 28 * mm
+    sisveg_value_w = 24 * mm
 
     cnv.saveState()
     cnv.setLineWidth(0.5)
@@ -194,8 +197,18 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.drawString(x + width - area_label_w + 2, third_top_y - 6, "Area da propriedade (ha):")
     cnv.drawString(x + width - 19 * mm + 2, third_top_y - 6, data["area_propriedade"])
 
+    fourth_top_y = third_top_y - row_h
+    cnv.rect(x, fourth_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + soja_label_w, fourth_top_y, x + soja_label_w, fourth_top_y - row_h)
+    cnv.line(x + width - sisveg_label_w - sisveg_value_w, fourth_top_y, x + width - sisveg_label_w - sisveg_value_w, fourth_top_y - row_h)
+    cnv.line(x + width - sisveg_value_w, fourth_top_y, x + width - sisveg_value_w, fourth_top_y - row_h)
+    cnv.drawString(x + 2, fourth_top_y - 6, "Area de soja cadastrada (ha):")
+    cnv.drawString(x + soja_label_w + 2, fourth_top_y - 6, data["area_soja_cadastrada"])
+    cnv.drawString(x + width - sisveg_label_w - sisveg_value_w + 2, fourth_top_y - 6, "COD. SISVEGETAL:")
+    cnv.drawString(x + width - sisveg_value_w + 2, fourth_top_y - 6, data["cod_sisvegetal"])
+
     cnv.restoreState()
-    return row_h * 3
+    return row_h * 4
 
 
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
@@ -335,6 +348,8 @@ with st.sidebar:
     logradouro = st.text_input("Logra douro (Setor/Lh/Lt...)", value="")
     municipio = st.text_input("Municipio", value="")
     area_propriedade = st.text_input("Area da propriedade (ha)", value="")
+    area_soja_cadastrada = st.text_input("Area de soja cadastrada (ha)", value="")
+    cod_sisvegetal = st.text_input("Cod. SISVEGETAL", value="")
     uf = st.text_input("UF", value="")
 
     st.divider()
@@ -383,6 +398,8 @@ document_data = {
     "logradouro": logradouro.strip(),
     "municipio": municipio.strip(),
     "area_propriedade": area_propriedade.strip(),
+    "area_soja_cadastrada": area_soja_cadastrada.strip(),
+    "cod_sisvegetal": cod_sisvegetal.strip(),
     "uf": uf.strip(),
     "ulsav_de": ulsav_de.strip(),
     "regional": regional.strip(),
