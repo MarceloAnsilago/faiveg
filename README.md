@@ -23,6 +23,12 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 python -m pip install -r requirements.txt
 ```
 
+Para reproduzir exatamente o ambiente validado neste projeto, use o lockfile:
+
+```powershell
+python -m pip install -r requirements-lock.txt
+```
+
 ## Rodar o app
 
 ```powershell

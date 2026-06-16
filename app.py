@@ -286,6 +286,9 @@ def draw_verification_block(
     right_padding = 3
     text_x = x + 3
     total_h = row_h * max(len(items), 1)
+    option_ascent = pdfmetrics.getAscent(FONT_REGULAR, option_font_size) / 1000 * option_font_size
+    option_descent = abs(pdfmetrics.getDescent(FONT_REGULAR, option_font_size) / 1000 * option_font_size)
+    option_text_h = option_ascent + option_descent
 
     left_label_w = pdfmetrics.stringWidth(left_option, FONT_REGULAR, option_font_size)
     right_label_w = pdfmetrics.stringWidth(right_option, FONT_REGULAR, option_font_size)
@@ -298,21 +301,23 @@ def draw_verification_block(
 
     for index, text in enumerate(items):
         current_top_y = top_y - (index * row_h)
+        row_center_y = current_top_y - (row_h / 2)
         text_max_width = max(max_options_start_x - text_x - option_text_gap, 40)
         font_size = fit_text(cnv, text, FONT_REGULAR, 7, 5, text_max_width)
         text_width = pdfmetrics.stringWidth(text, FONT_REGULAR, font_size)
         options_start_x = min(text_x + text_width + option_text_gap, max_options_start_x)
-        square_y = current_top_y - row_h + ((row_h - square_size) / 2)
+        square_y = row_center_y - (square_size / 2) + (1 * mm)
+        option_text_y = row_center_y - (option_text_h / 2) + option_descent
 
         cnv.setFont(FONT_REGULAR, font_size)
         cnv.drawString(text_x, current_top_y - 8, text)
         cnv.setFont(FONT_REGULAR, option_font_size)
         cnv.rect(options_start_x, square_y, square_size, square_size, stroke=1, fill=0)
-        cnv.drawString(options_start_x + square_size + label_gap, current_top_y - 8, left_option)
+        cnv.drawString(options_start_x + square_size + label_gap, option_text_y, left_option)
 
         right_square_x = options_start_x + square_size + label_gap + left_label_w + option_gap
         cnv.rect(right_square_x, square_y, square_size, square_size, stroke=1, fill=0)
-        cnv.drawString(right_square_x + square_size + label_gap, current_top_y - 8, right_option)
+        cnv.drawString(right_square_x + square_size + label_gap, option_text_y, right_option)
 
     cnv.restoreState()
     return total_h
