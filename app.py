@@ -150,7 +150,7 @@ def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: f
         f"REGIONAL: {data['regional']}".strip(),
     ]
     bottom_labels = [
-        f"PLACA DO VEICULO: {data['placa_veiculo']}".strip(),
+        f"PLACA DO VEÍCULO: {data['placa_veiculo']}".strip(),
         f"HOD. INICIAL: {data['hod_inicial']}".strip(),
         f"HOD. FINAL: {data['hod_final']}".strip(),
         f"DIST. DA ULSAV (km): {data['dist_ulsav_km']}".strip(),
@@ -217,9 +217,9 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(x + municipio_label_w, third_top_y, x + municipio_label_w, third_top_y - row_h)
     cnv.line(x + width - area_label_w, third_top_y, x + width - area_label_w, third_top_y - row_h)
     cnv.line(x + width - 19 * mm, third_top_y, x + width - 19 * mm, third_top_y - row_h)
-    cnv.drawString(x + 2, third_top_y - 6, "MUNICIPIO:")
+    cnv.drawString(x + 2, third_top_y - 6, "MUNICÍPIO:")
     cnv.drawString(x + municipio_label_w + 2, third_top_y - 6, data["municipio"])
-    cnv.drawString(x + width - area_label_w + 2, third_top_y - 6, "Area da propriedade (ha):")
+    cnv.drawString(x + width - area_label_w + 2, third_top_y - 6, "Área da propriedade (ha):")
     cnv.drawString(x + width - 19 * mm + 2, third_top_y - 6, data["area_propriedade"])
 
     fourth_top_y = third_top_y - row_h
@@ -227,7 +227,7 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(x + soja_label_w, fourth_top_y, x + soja_label_w, fourth_top_y - row_h)
     cnv.line(x + width - sisveg_label_w - sisveg_value_w, fourth_top_y, x + width - sisveg_label_w - sisveg_value_w, fourth_top_y - row_h)
     cnv.line(x + width - sisveg_value_w, fourth_top_y, x + width - sisveg_value_w, fourth_top_y - row_h)
-    cnv.drawString(x + 2, fourth_top_y - 6, "Area de soja cadastrada (ha):")
+    cnv.drawString(x + 2, fourth_top_y - 6, "Área de soja cadastrada (ha):")
     cnv.drawString(x + soja_label_w + 2, fourth_top_y - 6, data["area_soja_cadastrada"])
     cnv.drawString(x + width - sisveg_label_w - sisveg_value_w + 2, fourth_top_y - 6, "COD. SISVEGETAL:")
     cnv.drawString(x + width - sisveg_value_w + 2, fourth_top_y - 6, data["cod_sisvegetal"])
@@ -261,7 +261,7 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     confirm_start_x = x + coord_label_w + coord_half_w
     confirm_cell_w = (width - (coord_label_w + coord_half_w)) / 4
     sim_mark = "X" if data["coord_confere"] == "SIM" else ""
-    nao_mark = "X" if data["coord_confere"] == "NAO" else ""
+    nao_mark = "X" if data["coord_confere"] == "NÃO" else ""
 
     cnv.rect(x, eighth_top_y - row_h, width, row_h, stroke=1, fill=0)
     cnv.line(confirm_start_x, eighth_top_y, confirm_start_x, eighth_top_y - row_h)
@@ -271,7 +271,7 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.drawString(x + 2, eighth_top_y - 6, "COORDENADA DA PROPRIEDADE CONFERE COM A INFORMADA NO SISTEMA?")
     cnv.drawString(confirm_start_x + 2, eighth_top_y - 6, "SIM")
     cnv.drawString(confirm_start_x + confirm_cell_w + 2, eighth_top_y - 6, sim_mark)
-    cnv.drawString(confirm_start_x + (confirm_cell_w * 2) + 2, eighth_top_y - 6, "NAO")
+    cnv.drawString(confirm_start_x + (confirm_cell_w * 2) + 2, eighth_top_y - 6, "NÃO")
     cnv.drawString(confirm_start_x + (confirm_cell_w * 3) + 2, eighth_top_y - 6, nao_mark)
 
     cnv.restoreState()
@@ -479,7 +479,7 @@ def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: floa
     cnv.line(right_x, top_y, right_x, top_y - row_h)
 
     cnv.setFont(FONT_REGULAR, 7)
-    cnv.drawString(x + 3, text_y, "Estimativa de perca (%):")
+    cnv.drawString(x + 3, text_y, "Estimativa de perda (%):")
     cnv.drawString(right_x + 3, text_y, "Origem das sementes safra/safrinha:")
 
     propria_x = right_x + 48 * mm
@@ -536,7 +536,7 @@ def draw_schedule_signature_block(cnv: canvas.Canvas, x: float, top_y: float, wi
     cnv.drawString(split_x + 3, top_y - 13, "Local:")
 
     owner_header_y = top_y - row_h
-    cnv.drawString(x + 3, owner_header_y - 13, "Proprietário, Produtor ou Responsável pelas Informações :")
+    cnv.drawString(x + 3, owner_header_y - 13, "Proprietário, Produtor ou Responsável pelas Informações:")
     cnv.drawString(split_x + 3, owner_header_y - 13, "Carimbo e assinatura do servidor IDARON:")
 
     cnv.drawString(x + 3, owner_header_y - row_h - 13, "Nome:")
@@ -565,7 +565,7 @@ def draw_verification_block(
     width: float,
     items: list[dict[str, str | bool | list[str]]],
     left_option: str = "SIM",
-    right_option: str = "N\u00c3O",
+    right_option: str = "NÃO",
 ) -> float:
     row_h = 5.5 * mm
     option_font_size = 6
@@ -685,11 +685,11 @@ def build_pdf(data: dict[str, str]) -> bytes:
 
     y = PAGE_HEIGHT - TOP_MARGIN
 
-    idaron_logo = Path("logo idaron.png")
+    idaron_logo = Path("assets/logo idaron")
     estado_logo = Path("assets/logo-cropped.png")
 
     if idaron_logo.exists():
-        draw_image_scaled(cnv, idaron_logo, LEFT_MARGIN, y - 1 * mm, 24 * mm)
+        draw_image_scaled(cnv, idaron_logo, LEFT_MARGIN, y - 5 * mm, 24 * mm)
 
     if estado_logo.exists():
         center_w = 22 * mm
@@ -788,19 +788,19 @@ register_fonts()
 with st.sidebar:
     st.header("Dados do PDF")
 
-    numero = st.text_input("Numero", value="")
+    numero = st.text_input("Número", value="")
     data_emissao = st.date_input("Data", value=date.today(), format="DD/MM/YYYY")
-    responsavel = st.text_input("Responsavel", value="")
+    responsavel = st.text_input("Responsável", value="")
 
     st.divider()
-    st.subheader("Identificacao")
+    st.subheader("Identificação")
     produtor = st.text_input("Produtor / Cliente", value="")
     propriedade = st.text_input("Propriedade", value="")
     cod_propriedade = st.text_input("Cod. propriedade", value="")
     logradouro = st.text_input("Logra douro (Setor/Lh/Lt...)", value="")
-    municipio = st.text_input("Municipio", value="")
-    area_propriedade = st.text_input("Area da propriedade (ha)", value="")
-    area_soja_cadastrada = st.text_input("Area de soja cadastrada (ha)", value="")
+    municipio = st.text_input("Município", value="")
+    area_propriedade = st.text_input("Área da propriedade (ha)", value="")
+    area_soja_cadastrada = st.text_input("Área de soja cadastrada (ha)", value="")
     cod_sisvegetal = st.text_input("Cod. SISVEGETAL", value="")
     sojicultor = st.text_input("Sojicultor", value="")
     cpf = st.text_input("CPF", value="")
@@ -808,44 +808,44 @@ with st.sidebar:
     fone = st.text_input("Fone", value="")
     coord_s = st.text_input("Coordenada S", value="")
     coord_w = st.text_input("Coordenada W", value="")
-    coord_confere = st.selectbox("Coordenada confere no sistema", ["", "SIM", "NAO"], index=0)
+    coord_confere = st.selectbox("Coordenada confere no sistema", ["", "SIM", "NÃO"], index=0)
     uf = st.text_input("UF", value="")
 
     st.divider()
     st.subheader("Deslocamento")
     ulsav_de = st.text_input("ULSAV de", value="")
     regional = st.text_input("Regional", value="")
-    placa_veiculo = st.text_input("Placa do veiculo", value="")
+    placa_veiculo = st.text_input("Placa do veículo", value="")
     hod_inicial = st.text_input("HOD. inicial", value="")
     hod_final = st.text_input("HOD. final", value="")
     dist_ulsav_km = st.text_input("Dist. da ULSAV (km)", value="")
 
     st.divider()
-    st.subheader("Area e cultura")
+    st.subheader("Área e cultura")
     cultura = st.text_input("Cultura", value="")
-    area = st.text_input("Area", value="")
-    talhao = st.text_input("Talhao", value="")
+    area = st.text_input("Área", value="")
+    talhao = st.text_input("Talhão", value="")
 
     st.divider()
-    st.subheader("Cabecalho")
-    titulo = st.text_input("Titulo", value="FISCALIZACAO DO VAZIO SANITARIO DA SOJA")
+    st.subheader("Cabeçalho")
+    titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
     subtitulo = st.text_input(
-        "Subtitulo",
-        value="ESTABELECIDA PELA INSTRUCAO NORMATIVA N 04/2026/IDARON-PROCFAS",
+        "Subtítulo",
+        value="ESTABELECIDA PELA INSTRUÇÃO NORMATIVA N° 04/2026/IDARON-PROCFAS",
     )
 
     st.divider()
-    st.subheader("Conteudo")
+    st.subheader("Conteúdo")
     observacoes = st.text_area(
-        "Observacoes",
+        "Observações",
         value="",
         height=220,
-        placeholder="Digite aqui o conteudo que deve sair no PDF.",
+        placeholder="Digite aqui o conteúdo que deve sair no PDF.",
     )
 
 
 st.title("FAI Vegetal")
-st.caption("Base simplificada: o documento agora e gerado como PDF, sem depender da impressao HTML do navegador.")
+st.caption("Base simplificada: o documento agora é gerado como PDF, sem depender da impressão HTML do navegador.")
 
 document_data = {
     "numero": numero.strip(),
@@ -876,8 +876,8 @@ document_data = {
     "cultura": cultura.strip(),
     "area": area.strip(),
     "talhao": talhao.strip(),
-    "titulo": titulo.strip() or "FISCALIZACAO DO VAZIO SANITARIO DA SOJA",
-    "subtitulo": subtitulo.strip() or "ESTABELECIDA PELA INSTRUCAO NORMATIVA",
+    "titulo": titulo.strip() or "FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA",
+    "subtitulo": subtitulo.strip() or "ESTABELECIDA PELA INSTRUÇÃO NORMATIVA",
     "observacoes": observacoes.strip(),
 }
 
