@@ -161,6 +161,43 @@ def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: f
     return top_row_h + bottom_row_h
 
 
+def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str]) -> float:
+    row_h = 8 * mm
+    code_col_w = 42 * mm
+    municipio_label_w = 18 * mm
+    area_label_w = 38 * mm
+
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.setFont(FONT_REGULAR, 5)
+
+    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + width - code_col_w, top_y, x + width - code_col_w, top_y - row_h)
+    cnv.drawString(x + 2, top_y - 6, f"NOME DA PROPRIEDADE: {data['propriedade']}".strip())
+    cnv.drawString(x + width - code_col_w + 2, top_y - 6, f"COD. PROPRIEDADE: {data['cod_propriedade']}".strip())
+
+    second_top_y = top_y - row_h
+    cnv.rect(x, second_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.drawString(
+        x + 2,
+        second_top_y - 6,
+        f"LOGRA DOURO (Setor/Lh/Lt...): {data['logradouro']}".strip(),
+    )
+
+    third_top_y = second_top_y - row_h
+    cnv.rect(x, third_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + municipio_label_w, third_top_y, x + municipio_label_w, third_top_y - row_h)
+    cnv.line(x + width - area_label_w, third_top_y, x + width - area_label_w, third_top_y - row_h)
+    cnv.line(x + width - 19 * mm, third_top_y, x + width - 19 * mm, third_top_y - row_h)
+    cnv.drawString(x + 2, third_top_y - 6, "MUNICIPIO:")
+    cnv.drawString(x + municipio_label_w + 2, third_top_y - 6, data["municipio"])
+    cnv.drawString(x + width - area_label_w + 2, third_top_y - 6, "Area da propriedade (ha):")
+    cnv.drawString(x + width - 19 * mm + 2, third_top_y - 6, data["area_propriedade"])
+
+    cnv.restoreState()
+    return row_h * 3
+
+
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
     if not image_path.exists():
         return
@@ -237,7 +274,9 @@ def build_pdf(data: dict[str, str]) -> bytes:
 
     y -= title_row_h + 3 * mm
     compact_block_h = draw_compact_info_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
-    y -= compact_block_h + 5 * mm
+    y -= compact_block_h + 1 * mm
+    property_block_h = draw_property_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
+    y -= property_block_h + 5 * mm
     field_h = 16 * mm
     gap = 3 * mm
 
@@ -292,7 +331,10 @@ with st.sidebar:
     st.subheader("Identificacao")
     produtor = st.text_input("Produtor / Cliente", value="")
     propriedade = st.text_input("Propriedade", value="")
+    cod_propriedade = st.text_input("Cod. propriedade", value="")
+    logradouro = st.text_input("Logra douro (Setor/Lh/Lt...)", value="")
     municipio = st.text_input("Municipio", value="")
+    area_propriedade = st.text_input("Area da propriedade (ha)", value="")
     uf = st.text_input("UF", value="")
 
     st.divider()
@@ -337,7 +379,10 @@ document_data = {
     "responsavel": responsavel.strip(),
     "produtor": produtor.strip(),
     "propriedade": propriedade.strip(),
+    "cod_propriedade": cod_propriedade.strip(),
+    "logradouro": logradouro.strip(),
     "municipio": municipio.strip(),
+    "area_propriedade": area_propriedade.strip(),
     "uf": uf.strip(),
     "ulsav_de": ulsav_de.strip(),
     "regional": regional.strip(),
