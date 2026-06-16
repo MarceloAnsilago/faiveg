@@ -674,7 +674,7 @@ def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: flo
 def render_pdf_preview(pdf_bytes: bytes) -> bytes:
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     page = doc.load_page(0)
-    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+    pix = page.get_pixmap(matrix=fitz.Matrix(3, 3), alpha=False)
     return pix.tobytes("png")
 
 
