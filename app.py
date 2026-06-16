@@ -169,6 +169,8 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     soja_label_w = 33 * mm
     sisveg_label_w = 28 * mm
     sisveg_value_w = 24 * mm
+    cpf_label_w = 10 * mm
+    cpf_value_w = 30 * mm
 
     cnv.saveState()
     cnv.setLineWidth(0.5)
@@ -207,8 +209,16 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.drawString(x + width - sisveg_label_w - sisveg_value_w + 2, fourth_top_y - 6, "COD. SISVEGETAL:")
     cnv.drawString(x + width - sisveg_value_w + 2, fourth_top_y - 6, data["cod_sisvegetal"])
 
+    fifth_top_y = fourth_top_y - row_h
+    cnv.rect(x, fifth_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + width - cpf_label_w - cpf_value_w, fifth_top_y, x + width - cpf_label_w - cpf_value_w, fifth_top_y - row_h)
+    cnv.line(x + width - cpf_value_w, fifth_top_y, x + width - cpf_value_w, fifth_top_y - row_h)
+    cnv.drawString(x + 2, fifth_top_y - 6, f"SOJICULTOR: {data['sojicultor']}".strip())
+    cnv.drawString(x + width - cpf_label_w - cpf_value_w + 2, fifth_top_y - 6, "CPF:")
+    cnv.drawString(x + width - cpf_value_w + 2, fifth_top_y - 6, data["cpf"])
+
     cnv.restoreState()
-    return row_h * 4
+    return row_h * 5
 
 
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
@@ -350,6 +360,8 @@ with st.sidebar:
     area_propriedade = st.text_input("Area da propriedade (ha)", value="")
     area_soja_cadastrada = st.text_input("Area de soja cadastrada (ha)", value="")
     cod_sisvegetal = st.text_input("Cod. SISVEGETAL", value="")
+    sojicultor = st.text_input("Sojicultor", value="")
+    cpf = st.text_input("CPF", value="")
     uf = st.text_input("UF", value="")
 
     st.divider()
@@ -400,6 +412,8 @@ document_data = {
     "area_propriedade": area_propriedade.strip(),
     "area_soja_cadastrada": area_soja_cadastrada.strip(),
     "cod_sisvegetal": cod_sisvegetal.strip(),
+    "sojicultor": sojicultor.strip(),
+    "cpf": cpf.strip(),
     "uf": uf.strip(),
     "ulsav_de": ulsav_de.strip(),
     "regional": regional.strip(),
