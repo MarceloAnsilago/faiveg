@@ -511,6 +511,42 @@ def draw_other_observations_box(cnv: canvas.Canvas, x: float, top_y: float, widt
     return box_h
 
 
+def draw_schedule_signature_block(cnv: canvas.Canvas, x: float, top_y: float, width: float) -> float:
+    row_h = 8 * mm
+    total_h = row_h * 5
+    left_w = width * 0.53
+    right_w = width - left_w
+    left_mid_x = x + (left_w * 0.55)
+    split_x = x + left_w
+
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - total_h, width, total_h, stroke=1, fill=0)
+    cnv.line(split_x, top_y, split_x, top_y - total_h)
+
+    current_y = top_y - row_h
+    for _ in range(4):
+        cnv.line(x, current_y, x + width, current_y)
+        current_y -= row_h
+
+    cnv.line(left_mid_x, top_y, left_mid_x, top_y - row_h)
+    cnv.setFont(FONT_REGULAR, 7)
+    cnv.drawString(x + 3, top_y - 13, "Horário:")
+    cnv.drawString(left_mid_x + 3, top_y - 13, "Data:")
+    cnv.drawString(split_x + 3, top_y - 13, "Local:")
+
+    owner_header_y = top_y - row_h
+    cnv.drawString(x + 3, owner_header_y - 13, "Proprietário, Produtor ou Responsável pelas Informações :")
+    cnv.drawString(split_x + 3, owner_header_y - 13, "Carimbo e assinatura do servidor IDARON:")
+
+    cnv.drawString(x + 3, owner_header_y - row_h - 13, "Nome:")
+    cnv.drawString(x + 3, owner_header_y - (2 * row_h) - 13, "CPF:")
+    cnv.drawString(x + 3, owner_header_y - (3 * row_h) - 13, "Assinatura:")
+
+    cnv.restoreState()
+    return total_h
+
+
 def draw_block_header(cnv: canvas.Canvas, x: float, top_y: float, width: float, label: str) -> float:
     row_h = 5.5 * mm
     cnv.saveState()
@@ -742,41 +778,7 @@ def build_pdf(data: dict[str, str]) -> bytes:
     y -= seed_origin_h
     other_obs_h = draw_other_observations_box(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
     y -= other_obs_h + 1 * mm
-    field_h = 16 * mm
-    gap = 3 * mm
-
-    half_w = (CONTENT_WIDTH - gap) / 2
-    third_w = (CONTENT_WIDTH - 2 * gap) / 3
-
-    draw_field(cnv, LEFT_MARGIN, y, half_w, field_h, "Produtor / Cliente", data["produtor"])
-    draw_field(cnv, LEFT_MARGIN + half_w + gap, y, half_w, field_h, "Propriedade", data["propriedade"])
-    y -= field_h + gap
-
-    draw_field(cnv, LEFT_MARGIN, y, third_w, field_h, "Municipio", data["municipio"])
-    draw_field(cnv, LEFT_MARGIN + third_w + gap, y, third_w, field_h, "UF", data["uf"])
-    draw_field(cnv, LEFT_MARGIN + (third_w + gap) * 2, y, third_w, field_h, "Responsavel", data["responsavel"])
-    y -= field_h + 5 * mm
-
-    cnv.setFont(FONT_BOLD, 9.5)
-    cnv.drawString(LEFT_MARGIN, y, "AREA E CULTURA")
-    y -= 4 * mm
-
-    draw_field(cnv, LEFT_MARGIN, y, third_w, field_h, "Cultura", data["cultura"])
-    draw_field(cnv, LEFT_MARGIN + third_w + gap, y, third_w, field_h, "Area", data["area"])
-    draw_field(cnv, LEFT_MARGIN + (third_w + gap) * 2, y, third_w, field_h, "Talhao", data["talhao"])
-    y -= field_h + 5 * mm
-
-    cnv.setFont(FONT_BOLD, 9.5)
-    cnv.drawString(LEFT_MARGIN, y, "OBSERVACOES")
-    y -= 4 * mm
-
-    obs_height = 55 * mm
-    draw_text_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, obs_height, data["observacoes"])
-    y -= obs_height + 20 * mm
-
-    sign_w = 70 * mm
-    draw_signature_line(cnv, LEFT_MARGIN + 8 * mm, y, sign_w, "Responsavel tecnico")
-    draw_signature_line(cnv, PAGE_WIDTH - RIGHT_MARGIN - sign_w - 8 * mm, y, sign_w, "Produtor / Representante")
+    schedule_signature_h = draw_schedule_signature_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
 
     cnv.showPage()
     cnv.save()
