@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import base64
 from datetime import date
 from io import BytesIO
 from pathlib import Path
 
+import fitz
 import streamlit as st
-import streamlit.components.v1 as components
-from reportlab.lib.colors import black, white
+from PIL import Image
+from reportlab.lib.colors import black
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
@@ -118,6 +118,78 @@ def draw_signature_line(cnv: canvas.Canvas, x: float, y: float, width: float, la
     cnv.drawString(x + (width - label_width) / 2, y - 11, label)
 
 
+def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str]) -> float:
+    top_row_h = 8 * mm
+    bottom_row_h = 8 * mm
+    bottom_cell_w = width / 4
+    bottom_widths = [bottom_cell_w, bottom_cell_w, bottom_cell_w, bottom_cell_w]
+
+    top_labels = [
+        f"ULSAV DE: {data['ulsav_de']}".strip(),
+        f"REGIONAL: {data['regional']}".strip(),
+    ]
+    bottom_labels = [
+        f"PLACA DO VEICULO: {data['placa_veiculo']}".strip(),
+        f"HOD. INICIAL: {data['hod_inicial']}".strip(),
+        f"HOD. FINAL: {data['hod_final']}".strip(),
+        f"DIST. DA ULSAV (km): {data['dist_ulsav_km']}".strip(),
+    ]
+
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.setFont(FONT_REGULAR, 5)
+
+    cnv.rect(x, top_y - top_row_h, width, top_row_h, stroke=1, fill=0)
+    cnv.line(x + width / 2, top_y, x + width / 2, top_y - top_row_h)
+    cnv.drawString(x + 2, top_y - 6, top_labels[0])
+    cnv.drawString(x + width / 2 + 2, top_y - 6, top_labels[1])
+
+    bottom_top_y = top_y - top_row_h
+    cnv.rect(x, bottom_top_y - bottom_row_h, width, bottom_row_h, stroke=1, fill=0)
+
+    current_x = x
+    for cell_width in bottom_widths[:-1]:
+        current_x += cell_width
+        cnv.line(current_x, bottom_top_y, current_x, bottom_top_y - bottom_row_h)
+
+    current_x = x
+    for cell_width, label in zip(bottom_widths, bottom_labels):
+        cnv.drawString(current_x + 2, bottom_top_y - 6, label)
+        current_x += cell_width
+
+    cnv.restoreState()
+    return top_row_h + bottom_row_h
+
+
+def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
+    if not image_path.exists():
+        return
+
+    with Image.open(image_path) as img:
+        img_w, img_h = img.size
+
+    if img_w <= 0 or img_h <= 0:
+        return
+
+    target_h = target_w * (img_h / img_w)
+    cnv.drawImage(
+        str(image_path),
+        x,
+        top_y - target_h,
+        width=target_w,
+        height=target_h,
+        preserveAspectRatio=True,
+        mask="auto",
+    )
+
+
+def render_pdf_preview(pdf_bytes: bytes) -> bytes:
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    page = doc.load_page(0)
+    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
+    return pix.tobytes("png")
+
+
 def build_pdf(data: dict[str, str]) -> bytes:
     buffer = BytesIO()
     cnv = canvas.Canvas(buffer, pagesize=A4)
@@ -129,18 +201,18 @@ def build_pdf(data: dict[str, str]) -> bytes:
     estado_logo = Path("assets/logo-cropped.png")
 
     if idaron_logo.exists():
-        cnv.drawImage(str(idaron_logo), LEFT_MARGIN, y - 18 * mm, width=24 * mm, preserveAspectRatio=True, mask="auto")
+        draw_image_scaled(cnv, idaron_logo, LEFT_MARGIN, y - 1 * mm, 24 * mm)
 
     if estado_logo.exists():
         center_w = 22 * mm
         center_x = LEFT_MARGIN + (CONTENT_WIDTH - center_w) / 2
-        cnv.drawImage(str(estado_logo), center_x, y - 17 * mm, width=center_w, preserveAspectRatio=True, mask="auto")
+        draw_image_scaled(cnv, estado_logo, center_x, y, center_w)
 
     y -= 19 * mm
     cnv.setStrokeColor(black)
     cnv.line(LEFT_MARGIN, y, PAGE_WIDTH - RIGHT_MARGIN, y)
 
-    title_size = fit_text(cnv, data["titulo"], FONT_BOLD, 11.5, 8, CONTENT_WIDTH - 8)
+    title_size = 11.5
     cnv.setFont(FONT_BOLD, title_size)
     title_width = pdfmetrics.stringWidth(data["titulo"], FONT_BOLD, title_size)
     cnv.drawString((PAGE_WIDTH - title_width) / 2, y - 12, data["titulo"])
@@ -163,7 +235,9 @@ def build_pdf(data: dict[str, str]) -> bytes:
     cnv.drawString(LEFT_MARGIN + (left_area_width - row_title_width) / 2, y - 16, row_title)
     cnv.drawString(PAGE_WIDTH - RIGHT_MARGIN - number_col_w + 5, y - 16, f"N°/{data['numero']}")
 
-    y -= title_row_h + 5 * mm
+    y -= title_row_h + 3 * mm
+    compact_block_h = draw_compact_info_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
+    y -= compact_block_h + 5 * mm
     field_h = 16 * mm
     gap = 3 * mm
 
@@ -222,6 +296,15 @@ with st.sidebar:
     uf = st.text_input("UF", value="")
 
     st.divider()
+    st.subheader("Deslocamento")
+    ulsav_de = st.text_input("ULSAV de", value="")
+    regional = st.text_input("Regional", value="")
+    placa_veiculo = st.text_input("Placa do veiculo", value="")
+    hod_inicial = st.text_input("HOD. inicial", value="")
+    hod_final = st.text_input("HOD. final", value="")
+    dist_ulsav_km = st.text_input("Dist. da ULSAV (km)", value="")
+
+    st.divider()
     st.subheader("Area e cultura")
     cultura = st.text_input("Cultura", value="")
     area = st.text_input("Area", value="")
@@ -256,6 +339,12 @@ document_data = {
     "propriedade": propriedade.strip(),
     "municipio": municipio.strip(),
     "uf": uf.strip(),
+    "ulsav_de": ulsav_de.strip(),
+    "regional": regional.strip(),
+    "placa_veiculo": placa_veiculo.strip(),
+    "hod_inicial": hod_inicial.strip(),
+    "hod_final": hod_final.strip(),
+    "dist_ulsav_km": dist_ulsav_km.strip(),
     "cultura": cultura.strip(),
     "area": area.strip(),
     "talhao": talhao.strip(),
@@ -265,8 +354,6 @@ document_data = {
 }
 
 pdf_bytes = build_pdf(document_data)
-pdf_b64 = base64.b64encode(pdf_bytes).decode("ascii")
-
 left_col, right_col = st.columns([1, 1])
 with left_col:
     st.download_button(
@@ -274,20 +361,12 @@ with left_col:
         data=pdf_bytes,
         file_name="fai-vegetal.pdf",
         mime="application/pdf",
-        use_container_width=True,
+        width="stretch",
     )
 
 with right_col:
     st.write(f"Data do documento: `{document_data['data_emissao']}`")
+    st.write(f"Fonte do titulo: `{FONT_BOLD}` em `11.5pt`")
 
-components.html(
-    f"""
-    <iframe
-        src="data:application/pdf;base64,{pdf_b64}"
-        width="100%"
-        height="1100"
-        style="border: 1px solid #d0d7de; border-radius: 6px; background: white;"
-    ></iframe>
-    """,
-    height=1120,
-)
+preview_png = render_pdf_preview(pdf_bytes)
+st.image(preview_png, width="stretch")
