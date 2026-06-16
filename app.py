@@ -697,8 +697,6 @@ def build_pdf(data: dict[str, str]) -> bytes:
         draw_image_scaled(cnv, estado_logo, center_x, y, center_w)
 
     y -= 19 * mm
-    cnv.setStrokeColor(black)
-    cnv.line(LEFT_MARGIN, y, PAGE_WIDTH - RIGHT_MARGIN, y)
 
     title_size = 11.5
     cnv.setFont(FONT_BOLD, title_size)
@@ -710,7 +708,7 @@ def build_pdf(data: dict[str, str]) -> bytes:
     subtitle_width = pdfmetrics.stringWidth(data["subtitulo"], FONT_BOLD, subtitle_size)
     cnv.drawString((PAGE_WIDTH - subtitle_width) / 2, y - 20, data["subtitulo"])
 
-    y -= 25
+    y -= 29
     title_row_h = 8 * mm
     number_col_w = 38 * mm
     cnv.rect(LEFT_MARGIN, y - title_row_h, CONTENT_WIDTH, title_row_h, stroke=1, fill=0)
