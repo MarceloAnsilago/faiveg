@@ -171,6 +171,8 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     sisveg_value_w = 24 * mm
     cpf_label_w = 10 * mm
     cpf_value_w = 30 * mm
+    fone_label_w = 12 * mm
+    fone_value_w = 35 * mm
 
     cnv.saveState()
     cnv.setLineWidth(0.5)
@@ -217,8 +219,16 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.drawString(x + width - cpf_label_w - cpf_value_w + 2, fifth_top_y - 6, "CPF:")
     cnv.drawString(x + width - cpf_value_w + 2, fifth_top_y - 6, data["cpf"])
 
+    sixth_top_y = fifth_top_y - row_h
+    cnv.rect(x, sixth_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + width - fone_label_w - fone_value_w, sixth_top_y, x + width - fone_label_w - fone_value_w, sixth_top_y - row_h)
+    cnv.line(x + width - fone_value_w, sixth_top_y, x + width - fone_value_w, sixth_top_y - row_h)
+    cnv.drawString(x + 2, sixth_top_y - 6, f"e-mail: {data['email']}".strip())
+    cnv.drawString(x + width - fone_label_w - fone_value_w + 2, sixth_top_y - 6, "Fone:")
+    cnv.drawString(x + width - fone_value_w + 2, sixth_top_y - 6, data["fone"])
+
     cnv.restoreState()
-    return row_h * 5
+    return row_h * 6
 
 
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
@@ -362,6 +372,8 @@ with st.sidebar:
     cod_sisvegetal = st.text_input("Cod. SISVEGETAL", value="")
     sojicultor = st.text_input("Sojicultor", value="")
     cpf = st.text_input("CPF", value="")
+    email = st.text_input("e-mail", value="")
+    fone = st.text_input("Fone", value="")
     uf = st.text_input("UF", value="")
 
     st.divider()
@@ -414,6 +426,8 @@ document_data = {
     "cod_sisvegetal": cod_sisvegetal.strip(),
     "sojicultor": sojicultor.strip(),
     "cpf": cpf.strip(),
+    "email": email.strip(),
+    "fone": fone.strip(),
     "uf": uf.strip(),
     "ulsav_de": ulsav_de.strip(),
     "regional": regional.strip(),
