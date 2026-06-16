@@ -174,9 +174,6 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     fone_label_w = 12 * mm
     fone_value_w = 35 * mm
     coord_label_w = 48 * mm
-    conf_label_w = 12 * mm
-    conf_mark_w = 15 * mm
-
     cnv.saveState()
     cnv.setLineWidth(0.5)
     cnv.setFont(FONT_REGULAR, 5)
@@ -240,34 +237,79 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.drawString(x + coord_label_w + coord_half_w + 2, seventh_top_y - 6, f"W {data['coord_w']}".strip())
 
     eighth_top_y = seventh_top_y - row_h
-    confirm_right_w = (conf_label_w * 2) + (conf_mark_w * 2)
-    confirm_label_area_w = width - confirm_right_w
+    confirm_start_x = x + coord_label_w + coord_half_w
+    confirm_cell_w = (width - (coord_label_w + coord_half_w)) / 4
     sim_mark = "X" if data["coord_confere"] == "SIM" else ""
     nao_mark = "X" if data["coord_confere"] == "NAO" else ""
 
     cnv.rect(x, eighth_top_y - row_h, width, row_h, stroke=1, fill=0)
-    cnv.line(x + confirm_label_area_w, eighth_top_y, x + confirm_label_area_w, eighth_top_y - row_h)
-    cnv.line(x + confirm_label_area_w + conf_label_w, eighth_top_y, x + confirm_label_area_w + conf_label_w, eighth_top_y - row_h)
-    cnv.line(
-        x + confirm_label_area_w + conf_label_w + conf_mark_w,
-        eighth_top_y,
-        x + confirm_label_area_w + conf_label_w + conf_mark_w,
-        eighth_top_y - row_h,
-    )
-    cnv.line(
-        x + confirm_label_area_w + conf_label_w + conf_mark_w + conf_label_w,
-        eighth_top_y,
-        x + confirm_label_area_w + conf_label_w + conf_mark_w + conf_label_w,
-        eighth_top_y - row_h,
-    )
+    cnv.line(confirm_start_x, eighth_top_y, confirm_start_x, eighth_top_y - row_h)
+    cnv.line(confirm_start_x + confirm_cell_w, eighth_top_y, confirm_start_x + confirm_cell_w, eighth_top_y - row_h)
+    cnv.line(confirm_start_x + (confirm_cell_w * 2), eighth_top_y, confirm_start_x + (confirm_cell_w * 2), eighth_top_y - row_h)
+    cnv.line(confirm_start_x + (confirm_cell_w * 3), eighth_top_y, confirm_start_x + (confirm_cell_w * 3), eighth_top_y - row_h)
     cnv.drawString(x + 2, eighth_top_y - 6, "COORDENADA DA PROPRIEDADE CONFERE COM A INFORMADA NO SISTEMA?")
-    cnv.drawString(x + confirm_label_area_w + 2, eighth_top_y - 6, "SIM")
-    cnv.drawString(x + confirm_label_area_w + conf_label_w + 2, eighth_top_y - 6, sim_mark)
-    cnv.drawString(x + confirm_label_area_w + conf_label_w + conf_mark_w + 2, eighth_top_y - 6, "NAO")
-    cnv.drawString(x + confirm_label_area_w + conf_label_w + conf_mark_w + conf_label_w + 2, eighth_top_y - 6, nao_mark)
+    cnv.drawString(confirm_start_x + 2, eighth_top_y - 6, "SIM")
+    cnv.drawString(confirm_start_x + confirm_cell_w + 2, eighth_top_y - 6, sim_mark)
+    cnv.drawString(confirm_start_x + (confirm_cell_w * 2) + 2, eighth_top_y - 6, "NAO")
+    cnv.drawString(confirm_start_x + (confirm_cell_w * 3) + 2, eighth_top_y - 6, nao_mark)
 
     cnv.restoreState()
     return row_h * 8
+
+
+def draw_block_header(cnv: canvas.Canvas, x: float, top_y: float, width: float, label: str) -> float:
+    row_h = 5.5 * mm
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.setFont(FONT_BOLD, 8.5)
+    cnv.drawString(x + 3, top_y - 8, label)
+    cnv.restoreState()
+    return row_h
+
+
+def draw_verification_line(
+    cnv: canvas.Canvas,
+    x: float,
+    top_y: float,
+    width: float,
+    text: str,
+    left_option: str = "SIM",
+    right_option: str = "N\u00c3O",
+) -> float:
+    row_h = 5.5 * mm
+    option_font_size = 6
+    square_size = 2.4 * mm
+    label_gap = 1.2 * mm
+    option_gap = 5 * mm
+    option_text_gap = 1.5 * mm
+    right_padding = 3
+    text_x = x + 3
+
+    left_label_w = pdfmetrics.stringWidth(left_option, FONT_REGULAR, option_font_size)
+    right_label_w = pdfmetrics.stringWidth(right_option, FONT_REGULAR, option_font_size)
+    options_width = (square_size + label_gap + left_label_w + option_gap + square_size + label_gap + right_label_w)
+    max_options_start_x = x + width - right_padding - options_width
+    text_max_width = max(max_options_start_x - text_x - option_text_gap, 40)
+    font_size = fit_text(cnv, text, FONT_REGULAR, 7, 5, text_max_width)
+    text_width = pdfmetrics.stringWidth(text, FONT_REGULAR, font_size)
+    options_start_x = min(text_x + text_width + option_text_gap, max_options_start_x)
+    square_y = top_y - row_h + ((row_h - square_size) / 2)
+
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.setFont(FONT_REGULAR, font_size)
+    cnv.drawString(text_x, top_y - 8, text)
+    cnv.setFont(FONT_REGULAR, option_font_size)
+    cnv.rect(options_start_x, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.drawString(options_start_x + square_size + label_gap, top_y - 8, left_option)
+
+    right_square_x = options_start_x + square_size + label_gap + left_label_w + option_gap
+    cnv.rect(right_square_x, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.drawString(right_square_x + square_size + label_gap, top_y - 8, right_option)
+    cnv.restoreState()
+    return row_h
 
 
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
@@ -348,7 +390,17 @@ def build_pdf(data: dict[str, str]) -> bytes:
     compact_block_h = draw_compact_info_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
     y -= compact_block_h + 1 * mm
     property_block_h = draw_property_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
-    y -= property_block_h + 5 * mm
+    y -= property_block_h + 1 * mm
+    verification_header_h = draw_block_header(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, "SITUA\u00c7\u00d5ES VERIFICADAS:")
+    y -= verification_header_h
+    verification_line_h = draw_verification_line(
+        cnv,
+        LEFT_MARGIN,
+        y,
+        CONTENT_WIDTH,
+        "\u2022 A \u00e1rea fiscalizada possui cadastro no sistema da Ag\u00eancia IDARON:",
+    )
+    y -= verification_line_h + 3 * mm
     field_h = 16 * mm
     gap = 3 * mm
 
