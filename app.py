@@ -316,6 +316,24 @@ def draw_small_text_block(cnv: canvas.Canvas, x: float, top_y: float, width: flo
     return row_h
 
 
+def draw_split_standard_rows(cnv: canvas.Canvas, x: float, top_y: float, width: float, num_rows: int = 4) -> float:
+    row_h = 8 * mm
+    total_h = row_h * max(num_rows, 1)
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - total_h, width, total_h, stroke=1, fill=0)
+
+    mid_x = x + (width / 2)
+    cnv.line(mid_x, top_y, mid_x, top_y - total_h)
+
+    for index in range(1, num_rows):
+        row_y = top_y - (index * row_h)
+        cnv.line(x, row_y, x + width, row_y)
+
+    cnv.restoreState()
+    return total_h
+
+
 def draw_block_header(cnv: canvas.Canvas, x: float, top_y: float, width: float, label: str) -> float:
     row_h = 5.5 * mm
     cnv.saveState()
@@ -530,7 +548,9 @@ def build_pdf(data: dict[str, str]) -> bytes:
         CONTENT_WIDTH,
         "OBSERVA\u00c7\u00d5ES ADICIONAIS, conforme a Instru\u00e7\u00e3o Normativa n\u00ba 10/2024/IDARON-PROCFAS:",
     )
-    y -= additional_obs_h + 1 * mm
+    y -= additional_obs_h
+    additional_rows_h = draw_split_standard_rows(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, num_rows=4)
+    y -= additional_rows_h + 1 * mm
     field_h = 16 * mm
     gap = 3 * mm
 
