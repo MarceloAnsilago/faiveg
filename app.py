@@ -676,6 +676,8 @@ def build_pdf(data: dict[str, str]) -> bytes:
     draw_safrinha_register_option_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (8 * mm), CONTENT_WIDTH / 2, 8 * mm)
     draw_lab_confirmation_option_cell(cnv, LEFT_MARGIN, y - (16 * mm), CONTENT_WIDTH / 2, 8 * mm)
     draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (16 * mm), "Data de plantio:")
+    draw_plain_label_cell(cnv, LEFT_MARGIN, y - (24 * mm), "Laboratório:")
+    draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (24 * mm), "Outra(s) cultivos(s) safrinha:")
     y -= additional_rows_h + 1 * mm
     field_h = 16 * mm
     gap = 3 * mm
