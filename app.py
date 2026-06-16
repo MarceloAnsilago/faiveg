@@ -339,10 +339,33 @@ def draw_monitoring_option_cell(cnv: canvas.Canvas, x: float, top_y: float, widt
     square_size = 2.4 * mm
     label_gap = 1.2 * mm
     option_gap = 4 * mm
-    text_y = top_y - 10
-    square_y = top_y - height + ((height - square_size) / 2) + (1 * mm)
+    text_y = top_y - 13
+    square_y = top_y - height + ((height - square_size) / 2) + (1 * mm) - 2
 
     base_text = "Realiza monitoramento da ferrugem:"
+    cnv.setFont(FONT_REGULAR, font_size)
+    cnv.drawString(x + 3, text_y, base_text)
+
+    base_text_w = pdfmetrics.stringWidth(base_text, FONT_REGULAR, font_size)
+    sim_x = x + 3 + base_text_w + (2 * mm)
+    cnv.rect(sim_x, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.drawString(sim_x + square_size + label_gap, text_y, "SIM")
+
+    sim_label_w = pdfmetrics.stringWidth("SIM", FONT_REGULAR, font_size)
+    nao_x = sim_x + square_size + label_gap + sim_label_w + option_gap
+    cnv.rect(nao_x, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.drawString(nao_x + square_size + label_gap, text_y, "NÃO")
+
+
+def draw_safrinha_option_cell(cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float) -> None:
+    font_size = 7
+    square_size = 2.4 * mm
+    label_gap = 1.2 * mm
+    option_gap = 4 * mm
+    text_y = top_y - 13
+    square_y = top_y - height + ((height - square_size) / 2) + (1 * mm) - 2
+
+    base_text = "Cultiva soja em safrinha:"
     cnv.setFont(FONT_REGULAR, font_size)
     cnv.drawString(x + 3, text_y, base_text)
 
@@ -574,6 +597,7 @@ def build_pdf(data: dict[str, str]) -> bytes:
     y -= additional_obs_h
     additional_rows_h = draw_split_standard_rows(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, num_rows=4)
     draw_monitoring_option_cell(cnv, LEFT_MARGIN, y, CONTENT_WIDTH / 2, 8 * mm)
+    draw_safrinha_option_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y, CONTENT_WIDTH / 2, 8 * mm)
     y -= additional_rows_h + 1 * mm
     field_h = 16 * mm
     gap = 3 * mm
