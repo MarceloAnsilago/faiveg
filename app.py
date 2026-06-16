@@ -117,7 +117,7 @@ st.markdown(
     .doc-heading h2 {
         color: #111;
         font-family: Verdana, Geneva, sans-serif;
-        font-size: 28pt;
+        font-size: 48pt;
         line-height: 1;
         margin: 0;
         letter-spacing: 0;
