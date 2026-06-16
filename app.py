@@ -173,6 +173,7 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cpf_value_w = 30 * mm
     fone_label_w = 12 * mm
     fone_value_w = 35 * mm
+    coord_label_w = 48 * mm
 
     cnv.saveState()
     cnv.setLineWidth(0.5)
@@ -227,8 +228,17 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.drawString(x + width - fone_label_w - fone_value_w + 2, sixth_top_y - 6, "Fone:")
     cnv.drawString(x + width - fone_value_w + 2, sixth_top_y - 6, data["fone"])
 
+    seventh_top_y = sixth_top_y - row_h
+    coord_half_w = (width - coord_label_w) / 2
+    cnv.rect(x, seventh_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + coord_label_w, seventh_top_y, x + coord_label_w, seventh_top_y - row_h)
+    cnv.line(x + coord_label_w + coord_half_w, seventh_top_y, x + coord_label_w + coord_half_w, seventh_top_y - row_h)
+    cnv.drawString(x + 2, seventh_top_y - 6, "COORDENADA DA VISITA:")
+    cnv.drawString(x + coord_label_w + 2, seventh_top_y - 6, f"S {data['coord_s']}".strip())
+    cnv.drawString(x + coord_label_w + coord_half_w + 2, seventh_top_y - 6, f"W {data['coord_w']}".strip())
+
     cnv.restoreState()
-    return row_h * 6
+    return row_h * 7
 
 
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
@@ -374,6 +384,8 @@ with st.sidebar:
     cpf = st.text_input("CPF", value="")
     email = st.text_input("e-mail", value="")
     fone = st.text_input("Fone", value="")
+    coord_s = st.text_input("Coordenada S", value="")
+    coord_w = st.text_input("Coordenada W", value="")
     uf = st.text_input("UF", value="")
 
     st.divider()
@@ -428,6 +440,8 @@ document_data = {
     "cpf": cpf.strip(),
     "email": email.strip(),
     "fone": fone.strip(),
+    "coord_s": coord_s.strip(),
+    "coord_w": coord_w.strip(),
     "uf": uf.strip(),
     "ulsav_de": ulsav_de.strip(),
     "regional": regional.strip(),
