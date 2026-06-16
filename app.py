@@ -101,14 +101,35 @@ def draw_text_block(
     text: str,
 ) -> None:
     cnv.rect(x, top_y - height, width, height, stroke=1, fill=0)
-    cnv.setFont(FONT_REGULAR, 9)
+    font_size = 9
+    line_height = 11
+    bullet_size = 2.4 * mm
+    bullet_gap = 1.5 * mm
+    cnv.setFont(FONT_REGULAR, font_size)
 
     cursor_y = top_y - 14
-    for line in wrap_text(text, FONT_REGULAR, 9, width - 10):
-        if cursor_y < top_y - height + 10:
-            break
-        cnv.drawString(x + 5, cursor_y, line)
-        cursor_y -= 11
+    paragraphs = str(text or "").splitlines() or [""]
+    bottom_limit = top_y - height + 10
+
+    for paragraph in paragraphs:
+        raw = " ".join(paragraph.split())
+        if not raw:
+            cursor_y -= line_height
+            continue
+
+        has_square_bullet = raw.startswith("• ") or raw.startswith("- ")
+        content = raw[2:].strip() if has_square_bullet else raw
+        text_start_x = x + 5 + (bullet_size + bullet_gap if has_square_bullet else 0)
+        available_width = width - 10 - (bullet_size + bullet_gap if has_square_bullet else 0)
+
+        for line_index, line in enumerate(wrap_text(content, FONT_REGULAR, font_size, available_width)):
+            if cursor_y < bottom_limit:
+                return
+            if has_square_bullet and line_index == 0:
+                bullet_y = cursor_y - (bullet_size / 2) + (1 * mm)
+                cnv.rect(x + 5, bullet_y, bullet_size, bullet_size, stroke=1, fill=0)
+            cnv.drawString(text_start_x, cursor_y, line)
+            cursor_y -= line_height
 
 
 def draw_signature_line(cnv: canvas.Canvas, x: float, y: float, width: float, label: str) -> None:
@@ -273,7 +294,7 @@ def draw_verification_block(
     x: float,
     top_y: float,
     width: float,
-    items: list[str],
+    items: list[dict[str, str | bool | list[str]]],
     left_option: str = "SIM",
     right_option: str = "N\u00c3O",
 ) -> float:
@@ -299,17 +320,53 @@ def draw_verification_block(
     cnv.setLineWidth(0.5)
     cnv.rect(x, top_y - total_h, width, total_h, stroke=1, fill=0)
 
-    for index, text in enumerate(items):
+    for index, item in enumerate(items):
+        text = str(item["text"])
+        checkbox_only = bool(item.get("checkbox_only", False))
+        bold_terms = [str(term) for term in item.get("bold_terms", [])] if item.get("bold_terms") else []
         current_top_y = top_y - (index * row_h)
         row_center_y = current_top_y - (row_h / 2)
+        square_y = row_center_y - (square_size / 2) + (1 * mm)
         text_max_width = max(max_options_start_x - text_x - option_text_gap, 40)
         font_size = fit_text(cnv, text, FONT_REGULAR, 7, 5, text_max_width)
-        text_width = pdfmetrics.stringWidth(text, FONT_REGULAR, font_size)
-        options_start_x = min(text_x + text_width + option_text_gap, max_options_start_x)
-        square_y = row_center_y - (square_size / 2) + (1 * mm)
-        option_text_y = row_center_y - (option_text_h / 2) + option_descent
 
         cnv.setFont(FONT_REGULAR, font_size)
+        if checkbox_only:
+            cnv.rect(text_x, square_y, square_size, square_size, stroke=1, fill=0)
+            text_obj = cnv.beginText()
+            text_obj.setTextOrigin(text_x + square_size + label_gap, current_top_y - 8)
+            text_obj.setFont(FONT_REGULAR, font_size)
+
+            cursor = 0
+            while cursor < len(text):
+                next_match = None
+                next_term = None
+                for term in bold_terms:
+                    match_index = text.find(term, cursor)
+                    if match_index != -1 and (next_match is None or match_index < next_match):
+                        next_match = match_index
+                        next_term = term
+
+                if next_match is None or next_term is None:
+                    text_obj.setFont(FONT_REGULAR, font_size)
+                    text_obj.textOut(text[cursor:])
+                    break
+
+                if next_match > cursor:
+                    text_obj.setFont(FONT_REGULAR, font_size)
+                    text_obj.textOut(text[cursor:next_match])
+
+                text_obj.setFont(FONT_BOLD, font_size)
+                text_obj.textOut(next_term)
+                cursor = next_match + len(next_term)
+
+            cnv.drawText(text_obj)
+            continue
+
+        text_width = pdfmetrics.stringWidth(text, FONT_REGULAR, font_size)
+        options_start_x = min(text_x + text_width + option_text_gap, max_options_start_x)
+        option_text_y = row_center_y - (option_text_h / 2) + option_descent
+
         cnv.drawString(text_x, current_top_y - 8, text)
         cnv.setFont(FONT_REGULAR, option_font_size)
         cnv.rect(options_start_x, square_y, square_size, square_size, stroke=1, fill=0)
@@ -410,8 +467,13 @@ def build_pdf(data: dict[str, str]) -> bytes:
         y,
         CONTENT_WIDTH,
         [
-            "\u2022 A \u00e1rea fiscalizada possui cadastro no sistema da Ag\u00eancia IDARON:",
-            "\u2022 O cadastro foi realizado dentro do prazo Oficial:",
+            {"text": "\u2022 A \u00e1rea fiscalizada possui cadastro no sistema da Ag\u00eancia IDARON:"},
+            {"text": "\u2022 O cadastro foi realizado dentro do prazo Oficial:"},
+            {
+                "text": "Fica o produtor notificado, conforme Art. 10\u00b0 e par\u00e1grafos da Instru\u00e7\u00e3o Normativa n\u00ba 10/2024 a realizar o DESVITALIZAR em um prazo de 10 dias.",
+                "checkbox_only": True,
+                "bold_terms": ["produtor notificado", "DESVITALIZAR"],
+            },
         ],
     )
     y -= verification_line_h + 3 * mm
