@@ -114,11 +114,11 @@ st.markdown(
         padding-top: 1px;
     }
 
-    .doc-heading h2 {
+    .doc-heading-title {
         color: #111;
         font-family: Verdana, Geneva, sans-serif;
-        font-size: 48pt;
-        line-height: 1;
+        font-size: 11.5pt !important;
+        line-height: 1 !important;
         margin: 0;
         letter-spacing: 0;
         font-weight: 800;
@@ -129,7 +129,7 @@ st.markdown(
         color: #111;
         display: block;
         font-family: Verdana, Geneva, sans-serif;
-        font-size: 6pt;
+        font-size: 5pt;
         line-height: 1;
         font-weight: 700;
         text-transform: uppercase;
@@ -161,7 +161,7 @@ st.markdown(
     }
 
     .grid-2 {
-        display: grid;.doc-heading h2 {
+        display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
         margin-bottom: 10px;
@@ -371,7 +371,12 @@ html = f"""
                 <div></div>
             </div>
             <div class="doc-heading">
-                <h2>{clean(titulo)}</h2>
+                <div
+                    class="doc-heading-title"
+                    style="font-family: Verdana, Geneva, sans-serif; font-size: 11.5pt; line-height: 1; font-weight: 800; text-transform: uppercase;"
+                >
+                    {clean(titulo)}
+                </div>
                 <span>{clean(subtitulo, "")}</span>
             </div>
         </header>
