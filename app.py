@@ -304,6 +304,15 @@ def draw_standard_text_row(cnv: canvas.Canvas, x: float, top_y: float, width: fl
     return row_h
 
 
+def draw_standard_empty_row(cnv: canvas.Canvas, x: float, top_y: float, width: float) -> float:
+    row_h = 8 * mm
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.restoreState()
+    return row_h
+
+
 def draw_small_text_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, text: str) -> float:
     row_h = 5.2 * mm
     font_size = fit_text(cnv, text, FONT_BOLD, 7, 5, width - 6)
@@ -452,6 +461,54 @@ def draw_lab_confirmation_option_cell(cnv: canvas.Canvas, x: float, top_y: float
 def draw_plain_label_cell(cnv: canvas.Canvas, x: float, top_y: float, text: str) -> None:
     cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(x + 3, top_y - 13, text)
+
+
+def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: float) -> float:
+    row_h = 8 * mm
+    left_w = 62 * mm
+    square_size = 2.4 * mm
+    label_gap = 1.2 * mm
+    option_gap = 5 * mm
+    text_y = top_y - 13
+    square_y = top_y - row_h + ((row_h - square_size) / 2) + (1 * mm) - 2
+    right_x = x + left_w
+
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(right_x, top_y, right_x, top_y - row_h)
+
+    cnv.setFont(FONT_REGULAR, 7)
+    cnv.drawString(x + 3, text_y, "Estimativa de perca (%):")
+    cnv.drawString(right_x + 3, text_y, "Origem das sementes safra/safrinha:")
+
+    propria_x = right_x + 48 * mm
+    cnv.rect(propria_x, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.drawString(propria_x + square_size + label_gap, text_y, "Própria")
+
+    empresa_x = propria_x + square_size + label_gap + pdfmetrics.stringWidth("Própria", FONT_REGULAR, 7) + option_gap
+    cnv.rect(empresa_x, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.drawString(empresa_x + square_size + label_gap, text_y, "Empresa")
+
+    outra_x = empresa_x + square_size + label_gap + pdfmetrics.stringWidth("Empresa", FONT_REGULAR, 7) + option_gap
+    cnv.rect(outra_x, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.drawString(outra_x + square_size + label_gap, text_y, "Outra")
+
+    cnv.restoreState()
+    return row_h
+
+
+def draw_other_observations_box(cnv: canvas.Canvas, x: float, top_y: float, width: float) -> float:
+    row_h = 8 * mm
+    box_h = row_h * 3
+
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - box_h, width, box_h, stroke=1, fill=0)
+    cnv.setFont(FONT_BOLD, 7)
+    cnv.drawString(x + 3, top_y - 10, "Outras observações:")
+    cnv.restoreState()
+    return box_h
 
 
 def draw_block_header(cnv: canvas.Canvas, x: float, top_y: float, width: float, label: str) -> float:
@@ -678,7 +735,13 @@ def build_pdf(data: dict[str, str]) -> bytes:
     draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (16 * mm), "Data de plantio:")
     draw_plain_label_cell(cnv, LEFT_MARGIN, y - (24 * mm), "Laboratório:")
     draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (24 * mm), "Outra(s) cultivos(s) safrinha:")
-    y -= additional_rows_h + 1 * mm
+    y -= additional_rows_h
+    blank_row_h = draw_standard_empty_row(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
+    y -= blank_row_h
+    seed_origin_h = draw_seed_origin_row(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
+    y -= seed_origin_h
+    other_obs_h = draw_other_observations_box(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
+    y -= other_obs_h + 1 * mm
     field_h = 16 * mm
     gap = 3 * mm
 
