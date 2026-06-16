@@ -174,6 +174,8 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     fone_label_w = 12 * mm
     fone_value_w = 35 * mm
     coord_label_w = 48 * mm
+    conf_label_w = 12 * mm
+    conf_mark_w = 15 * mm
 
     cnv.saveState()
     cnv.setLineWidth(0.5)
@@ -237,8 +239,35 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.drawString(x + coord_label_w + 2, seventh_top_y - 6, f"S {data['coord_s']}".strip())
     cnv.drawString(x + coord_label_w + coord_half_w + 2, seventh_top_y - 6, f"W {data['coord_w']}".strip())
 
+    eighth_top_y = seventh_top_y - row_h
+    confirm_right_w = (conf_label_w * 2) + (conf_mark_w * 2)
+    confirm_label_area_w = width - confirm_right_w
+    sim_mark = "X" if data["coord_confere"] == "SIM" else ""
+    nao_mark = "X" if data["coord_confere"] == "NAO" else ""
+
+    cnv.rect(x, eighth_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + confirm_label_area_w, eighth_top_y, x + confirm_label_area_w, eighth_top_y - row_h)
+    cnv.line(x + confirm_label_area_w + conf_label_w, eighth_top_y, x + confirm_label_area_w + conf_label_w, eighth_top_y - row_h)
+    cnv.line(
+        x + confirm_label_area_w + conf_label_w + conf_mark_w,
+        eighth_top_y,
+        x + confirm_label_area_w + conf_label_w + conf_mark_w,
+        eighth_top_y - row_h,
+    )
+    cnv.line(
+        x + confirm_label_area_w + conf_label_w + conf_mark_w + conf_label_w,
+        eighth_top_y,
+        x + confirm_label_area_w + conf_label_w + conf_mark_w + conf_label_w,
+        eighth_top_y - row_h,
+    )
+    cnv.drawString(x + 2, eighth_top_y - 6, "COORDENADA DA PROPRIEDADE CONFERE COM A INFORMADA NO SISTEMA?")
+    cnv.drawString(x + confirm_label_area_w + 2, eighth_top_y - 6, "SIM")
+    cnv.drawString(x + confirm_label_area_w + conf_label_w + 2, eighth_top_y - 6, sim_mark)
+    cnv.drawString(x + confirm_label_area_w + conf_label_w + conf_mark_w + 2, eighth_top_y - 6, "NAO")
+    cnv.drawString(x + confirm_label_area_w + conf_label_w + conf_mark_w + conf_label_w + 2, eighth_top_y - 6, nao_mark)
+
     cnv.restoreState()
-    return row_h * 7
+    return row_h * 8
 
 
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
@@ -386,6 +415,7 @@ with st.sidebar:
     fone = st.text_input("Fone", value="")
     coord_s = st.text_input("Coordenada S", value="")
     coord_w = st.text_input("Coordenada W", value="")
+    coord_confere = st.selectbox("Coordenada confere no sistema", ["", "SIM", "NAO"], index=0)
     uf = st.text_input("UF", value="")
 
     st.divider()
@@ -442,6 +472,7 @@ document_data = {
     "fone": fone.strip(),
     "coord_s": coord_s.strip(),
     "coord_w": coord_w.strip(),
+    "coord_confere": coord_confere.strip(),
     "uf": uf.strip(),
     "ulsav_de": ulsav_de.strip(),
     "regional": regional.strip(),
