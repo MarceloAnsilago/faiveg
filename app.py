@@ -278,6 +278,44 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     return row_h * 8
 
 
+def draw_standard_text_row(cnv: canvas.Canvas, x: float, top_y: float, width: float, text: str) -> float:
+    font_size = 7
+    line_height = 8
+    square_size = 2.4 * mm
+    label_gap = 1.2 * mm
+    text_x = x + 3 + square_size + label_gap
+    text_width = width - (text_x - x) - 3
+    wrapped_lines = wrap_text(text, FONT_REGULAR, font_size, text_width)
+    text_block_h = line_height * len(wrapped_lines)
+    row_h = max(8 * mm, text_block_h + 6)
+    top_padding = 8
+    square_y = top_y - top_padding - square_size + (1 * mm)
+
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.rect(x + 3, square_y, square_size, square_size, stroke=1, fill=0)
+    cnv.setFont(FONT_REGULAR, font_size)
+    cursor_y = top_y - top_padding
+    for line in wrapped_lines:
+        cnv.drawString(text_x, cursor_y, line)
+        cursor_y -= line_height
+    cnv.restoreState()
+    return row_h
+
+
+def draw_small_text_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, text: str) -> float:
+    row_h = 5.2 * mm
+    font_size = fit_text(cnv, text, FONT_BOLD, 7, 5, width - 6)
+    cnv.saveState()
+    cnv.setLineWidth(0.5)
+    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.setFont(FONT_BOLD, font_size)
+    cnv.drawString(x + 3, top_y - 8, text)
+    cnv.restoreState()
+    return row_h
+
+
 def draw_block_header(cnv: canvas.Canvas, x: float, top_y: float, width: float, label: str) -> float:
     row_h = 5.5 * mm
     cnv.saveState()
@@ -476,7 +514,23 @@ def build_pdf(data: dict[str, str]) -> bytes:
             },
         ],
     )
-    y -= verification_line_h + 3 * mm
+    y -= verification_line_h + 1 * mm
+    empty_row_h = draw_standard_text_row(
+        cnv,
+        LEFT_MARGIN,
+        y,
+        CONTENT_WIDTH,
+        "A(s) notifica\u00e7\u00e3o(\u00f5es) n\u00e3o foi(ram) atendida(s) dentro do prazo, caracterizando irregularidade(s) e o descumprimento da Instru\u00e7\u00e3o Normativa n\u00b0 10/2024-IDARON, tendo sido lavrado Auto de Infra\u00e7\u00e3o N\u00b0 ______ em __/___/20__",
+    )
+    y -= empty_row_h + 1 * mm
+    additional_obs_h = draw_small_text_block(
+        cnv,
+        LEFT_MARGIN,
+        y,
+        CONTENT_WIDTH,
+        "OBSERVA\u00c7\u00d5ES ADICIONAIS, conforme a Instru\u00e7\u00e3o Normativa n\u00ba 10/2024/IDARON-PROCFAS:",
+    )
+    y -= additional_obs_h + 1 * mm
     field_h = 16 * mm
     gap = 3 * mm
 
