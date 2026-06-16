@@ -268,12 +268,12 @@ def draw_block_header(cnv: canvas.Canvas, x: float, top_y: float, width: float, 
     return row_h
 
 
-def draw_verification_line(
+def draw_verification_block(
     cnv: canvas.Canvas,
     x: float,
     top_y: float,
     width: float,
-    text: str,
+    items: list[str],
     left_option: str = "SIM",
     right_option: str = "N\u00c3O",
 ) -> float:
@@ -285,31 +285,37 @@ def draw_verification_line(
     option_text_gap = 1.5 * mm
     right_padding = 3
     text_x = x + 3
+    total_h = row_h * max(len(items), 1)
 
     left_label_w = pdfmetrics.stringWidth(left_option, FONT_REGULAR, option_font_size)
     right_label_w = pdfmetrics.stringWidth(right_option, FONT_REGULAR, option_font_size)
     options_width = (square_size + label_gap + left_label_w + option_gap + square_size + label_gap + right_label_w)
     max_options_start_x = x + width - right_padding - options_width
-    text_max_width = max(max_options_start_x - text_x - option_text_gap, 40)
-    font_size = fit_text(cnv, text, FONT_REGULAR, 7, 5, text_max_width)
-    text_width = pdfmetrics.stringWidth(text, FONT_REGULAR, font_size)
-    options_start_x = min(text_x + text_width + option_text_gap, max_options_start_x)
-    square_y = top_y - row_h + ((row_h - square_size) / 2)
 
     cnv.saveState()
     cnv.setLineWidth(0.5)
-    cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
-    cnv.setFont(FONT_REGULAR, font_size)
-    cnv.drawString(text_x, top_y - 8, text)
-    cnv.setFont(FONT_REGULAR, option_font_size)
-    cnv.rect(options_start_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(options_start_x + square_size + label_gap, top_y - 8, left_option)
+    cnv.rect(x, top_y - total_h, width, total_h, stroke=1, fill=0)
 
-    right_square_x = options_start_x + square_size + label_gap + left_label_w + option_gap
-    cnv.rect(right_square_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(right_square_x + square_size + label_gap, top_y - 8, right_option)
+    for index, text in enumerate(items):
+        current_top_y = top_y - (index * row_h)
+        text_max_width = max(max_options_start_x - text_x - option_text_gap, 40)
+        font_size = fit_text(cnv, text, FONT_REGULAR, 7, 5, text_max_width)
+        text_width = pdfmetrics.stringWidth(text, FONT_REGULAR, font_size)
+        options_start_x = min(text_x + text_width + option_text_gap, max_options_start_x)
+        square_y = current_top_y - row_h + ((row_h - square_size) / 2)
+
+        cnv.setFont(FONT_REGULAR, font_size)
+        cnv.drawString(text_x, current_top_y - 8, text)
+        cnv.setFont(FONT_REGULAR, option_font_size)
+        cnv.rect(options_start_x, square_y, square_size, square_size, stroke=1, fill=0)
+        cnv.drawString(options_start_x + square_size + label_gap, current_top_y - 8, left_option)
+
+        right_square_x = options_start_x + square_size + label_gap + left_label_w + option_gap
+        cnv.rect(right_square_x, square_y, square_size, square_size, stroke=1, fill=0)
+        cnv.drawString(right_square_x + square_size + label_gap, current_top_y - 8, right_option)
+
     cnv.restoreState()
-    return row_h
+    return total_h
 
 
 def draw_image_scaled(cnv: canvas.Canvas, image_path: Path, x: float, top_y: float, target_w: float) -> None:
@@ -393,12 +399,15 @@ def build_pdf(data: dict[str, str]) -> bytes:
     y -= property_block_h + 1 * mm
     verification_header_h = draw_block_header(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, "SITUA\u00c7\u00d5ES VERIFICADAS:")
     y -= verification_header_h
-    verification_line_h = draw_verification_line(
+    verification_line_h = draw_verification_block(
         cnv,
         LEFT_MARGIN,
         y,
         CONTENT_WIDTH,
-        "\u2022 A \u00e1rea fiscalizada possui cadastro no sistema da Ag\u00eancia IDARON:",
+        [
+            "\u2022 A \u00e1rea fiscalizada possui cadastro no sistema da Ag\u00eancia IDARON:",
+            "\u2022 O cadastro foi realizado dentro do prazo Oficial:",
+        ],
     )
     y -= verification_line_h + 3 * mm
     field_h = 16 * mm
