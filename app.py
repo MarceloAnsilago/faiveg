@@ -159,25 +159,34 @@ def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: f
     bottom_cell_w = width / 4
     bottom_widths = [bottom_cell_w, bottom_cell_w, bottom_cell_w, bottom_cell_w]
 
-    top_labels = [
-        f"ULSAV DE: {data['ulsav_de']}".strip(),
-        f"REGIONAL: {data['regional']}".strip(),
+    top_fields = [
+        ("ULSAV DE:", data["ulsav_de"]),
+        ("REGIONAL:", data["regional"]),
     ]
-    bottom_labels = [
-        f"PLACA DO VEÍCULO: {data['placa_veiculo']}".strip(),
-        f"HOD. INICIAL: {data['hod_inicial']}".strip(),
-        f"HOD. FINAL: {data['hod_final']}".strip(),
-        f"DIST. DA ULSAV (km): {data['dist_ulsav_km']}".strip(),
+    bottom_fields = [
+        ("PLACA DO VEÍCULO:", data["placa_veiculo"]),
+        ("HOD. INICIAL:", data["hod_inicial"]),
+        ("HOD. FINAL:", data["hod_final"]),
+        ("DIST. DA ULSAV (km):", data["dist_ulsav_km"]),
     ]
 
     cnv.saveState()
     cnv.setLineWidth(0.5)
-    cnv.setFont(FONT_REGULAR, 5)
+
+    def draw_label_value(cell_x: float, cell_top_y: float, cell_width: float, label: str, value: str) -> None:
+        cnv.setFont(FONT_REGULAR, 5)
+        cnv.drawString(cell_x + 2, cell_top_y - 5, label)
+        value = str(value or "").strip()
+        if not value:
+            return
+        font_size = fit_text(cnv, value, FONT_BOLD, 7.5, 5.5, cell_width - 4)
+        cnv.setFont(FONT_BOLD, font_size)
+        cnv.drawString(cell_x + 2, cell_top_y - 14, value)
 
     cnv.rect(x, top_y - top_row_h, width, top_row_h, stroke=1, fill=0)
     cnv.line(x + width / 2, top_y, x + width / 2, top_y - top_row_h)
-    cnv.drawString(x + 2, top_y - 6, top_labels[0])
-    cnv.drawString(x + width / 2 + 2, top_y - 6, top_labels[1])
+    draw_label_value(x, top_y, width / 2, *top_fields[0])
+    draw_label_value(x + width / 2, top_y, width / 2, *top_fields[1])
 
     bottom_top_y = top_y - top_row_h
     cnv.rect(x, bottom_top_y - bottom_row_h, width, bottom_row_h, stroke=1, fill=0)
@@ -188,8 +197,8 @@ def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: f
         cnv.line(current_x, bottom_top_y, current_x, bottom_top_y - bottom_row_h)
 
     current_x = x
-    for cell_width, label in zip(bottom_widths, bottom_labels):
-        cnv.drawString(current_x + 2, bottom_top_y - 6, label)
+    for cell_width, (label, value) in zip(bottom_widths, bottom_fields):
+        draw_label_value(current_x, bottom_top_y, cell_width, label, value)
         current_x += cell_width
 
     cnv.restoreState()
@@ -487,7 +496,7 @@ def draw_other_observations_box(cnv: canvas.Canvas, x: float, top_y: float, widt
     return box_h
 
 
-def draw_schedule_signature_block(cnv: canvas.Canvas, x: float, top_y: float, width: float) -> float:
+def draw_schedule_signature_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str]) -> float:
     row_h = 8 * mm
     total_h = row_h * 5
     left_w = width * 0.53
@@ -518,6 +527,9 @@ def draw_schedule_signature_block(cnv: canvas.Canvas, x: float, top_y: float, wi
     cnv.drawString(x + 3, owner_header_y - row_h - 13, "Nome:")
     cnv.drawString(x + 3, owner_header_y - (2 * row_h) - 13, "CPF:")
     cnv.drawString(x + 3, owner_header_y - (3 * row_h) - 13, "Assinatura:")
+    servidor = str(data.get("responsavel", "")).strip()
+    if servidor:
+        cnv.drawString(split_x + 3, owner_header_y - row_h - 13, f"Servidor: {servidor}")
 
     cnv.restoreState()
     return total_h
@@ -761,7 +773,7 @@ def build_pdf(data: dict[str, str]) -> bytes:
     y -= seed_origin_h
     other_obs_h = draw_other_observations_box(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
     y -= other_obs_h + 1 * mm
-    schedule_signature_h = draw_schedule_signature_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
+    schedule_signature_h = draw_schedule_signature_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
 
     cnv.showPage()
     cnv.save()
@@ -774,13 +786,20 @@ yes_no_options = ["", "SIM", "NÃO"]
 
 st.header("Formulário do PDF")
 with st.form("fai_pdf_form"):
-    top_cols = st.columns(3)
-    with top_cols[0]:
-        numero = st.text_input("Número", value="")
-    with top_cols[1]:
-        data_emissao = st.date_input("Data", value=date.today(), format="DD/MM/YYYY")
-    with top_cols[2]:
-        responsavel = st.text_input("Responsável", value="")
+    with st.expander("Da IDARON:", expanded=True):
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            numero = st.text_input("Número da FAI", value="")
+            ulsav_de = st.text_input("ULSAV de", value="")
+            placa_veiculo = st.text_input("Placa do veículo", value="")
+        with col_b:
+            data_emissao = st.date_input("Data", value=date.today(), format="DD/MM/YYYY")
+            regional = st.text_input("Regional", value="")
+            hod_inicial = st.text_input("HOD. inicial", value="")
+        with col_c:
+            responsavel = st.text_input("Nome do servidor", value="")
+            hod_final = st.text_input("HOD. final", value="")
+            dist_ulsav_km = st.text_input("Dist. da ULSAV (km)", value="")
 
     with st.expander("Identificação", expanded=True):
         col_a, col_b, col_c = st.columns(3)
@@ -803,17 +822,6 @@ with st.form("fai_pdf_form"):
             coord_w = st.text_input("Coordenada W", value="")
             coord_confere = st.selectbox("Coordenada confere no sistema", yes_no_options, index=0)
             uf = st.text_input("UF", value="")
-
-    with st.expander("Deslocamento", expanded=False):
-        col_a, col_b = st.columns(2)
-        with col_a:
-            ulsav_de = st.text_input("ULSAV de", value="")
-            placa_veiculo = st.text_input("Placa do veículo", value="")
-            hod_inicial = st.text_input("HOD. inicial", value="")
-        with col_b:
-            regional = st.text_input("Regional", value="")
-            hod_final = st.text_input("HOD. final", value="")
-            dist_ulsav_km = st.text_input("Dist. da ULSAV (km)", value="")
 
     with st.expander("OBSERVAÇÕES ADICIONAIS,", expanded=True):
         titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
