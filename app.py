@@ -20,6 +20,20 @@ st.set_page_config(
     layout="wide",
 )
 
+st.markdown(
+    """
+    <style>
+    .stApp .block-container {
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-top: 1.5rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
 LEFT_MARGIN = 14 * mm
@@ -288,7 +302,7 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     return row_h * 8
 
 
-def draw_standard_text_row(cnv: canvas.Canvas, x: float, top_y: float, width: float, text: str) -> float:
+def draw_standard_text_row(cnv: canvas.Canvas, x: float, top_y: float, width: float, text: str, checked: bool = False) -> float:
     font_size = 7
     line_height = 8
     square_size = 2.4 * mm
@@ -304,7 +318,7 @@ def draw_standard_text_row(cnv: canvas.Canvas, x: float, top_y: float, width: fl
     cnv.saveState()
     cnv.setLineWidth(0.5)
     cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
-    cnv.rect(x + 3, square_y, square_size, square_size, stroke=1, fill=0)
+    draw_marked_square(cnv, x + 3, square_y, square_size, checked)
     cnv.setFont(FONT_REGULAR, font_size)
     cursor_y = top_y - top_padding
     for line in wrapped_lines:
@@ -353,7 +367,21 @@ def draw_split_standard_rows(cnv: canvas.Canvas, x: float, top_y: float, width: 
     return total_h
 
 
-def draw_monitoring_option_cell(cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float) -> None:
+def draw_marked_square(cnv: canvas.Canvas, x: float, y: float, size: float, marked: bool) -> None:
+    cnv.rect(x, y, size, size, stroke=1, fill=0)
+    if marked:
+        cnv.setFont(FONT_BOLD, 6)
+        cnv.drawString(x + 0.6 * mm, y + 0.1 * mm, "X")
+
+
+def draw_yes_no_option_cell(
+    cnv: canvas.Canvas,
+    x: float,
+    top_y: float,
+    height: float,
+    base_text: str,
+    selected: str = "",
+) -> None:
     font_size = 7
     square_size = 2.4 * mm
     label_gap = 1.2 * mm
@@ -361,111 +389,48 @@ def draw_monitoring_option_cell(cnv: canvas.Canvas, x: float, top_y: float, widt
     text_y = top_y - 13
     square_y = top_y - height + ((height - square_size) / 2) + (1 * mm) - 2
 
-    base_text = "Realiza monitoramento da ferrugem:"
     cnv.setFont(FONT_REGULAR, font_size)
     cnv.drawString(x + 3, text_y, base_text)
 
     base_text_w = pdfmetrics.stringWidth(base_text, FONT_REGULAR, font_size)
     sim_x = x + 3 + base_text_w + (2 * mm)
-    cnv.rect(sim_x, square_y, square_size, square_size, stroke=1, fill=0)
+    draw_marked_square(cnv, sim_x, square_y, square_size, selected == "SIM")
     cnv.drawString(sim_x + square_size + label_gap, text_y, "SIM")
 
     sim_label_w = pdfmetrics.stringWidth("SIM", FONT_REGULAR, font_size)
     nao_x = sim_x + square_size + label_gap + sim_label_w + option_gap
-    cnv.rect(nao_x, square_y, square_size, square_size, stroke=1, fill=0)
+    draw_marked_square(cnv, nao_x, square_y, square_size, selected == "NÃO")
     cnv.drawString(nao_x + square_size + label_gap, text_y, "NÃO")
 
 
-def draw_safrinha_option_cell(cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float) -> None:
-    font_size = 7
-    square_size = 2.4 * mm
-    label_gap = 1.2 * mm
-    option_gap = 4 * mm
-    text_y = top_y - 13
-    square_y = top_y - height + ((height - square_size) / 2) + (1 * mm) - 2
-
-    base_text = "Cultiva soja em safrinha:"
-    cnv.setFont(FONT_REGULAR, font_size)
-    cnv.drawString(x + 3, text_y, base_text)
-
-    base_text_w = pdfmetrics.stringWidth(base_text, FONT_REGULAR, font_size)
-    sim_x = x + 3 + base_text_w + (2 * mm)
-    cnv.rect(sim_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(sim_x + square_size + label_gap, text_y, "SIM")
-
-    sim_label_w = pdfmetrics.stringWidth("SIM", FONT_REGULAR, font_size)
-    nao_x = sim_x + square_size + label_gap + sim_label_w + option_gap
-    cnv.rect(nao_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(nao_x + square_size + label_gap, text_y, "NÃO")
+def draw_monitoring_option_cell(
+    cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float, selected: str = ""
+) -> None:
+    draw_yes_no_option_cell(cnv, x, top_y, height, "Realiza monitoramento da ferrugem:", selected)
 
 
-def draw_occurrence_option_cell(cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float) -> None:
-    font_size = 7
-    square_size = 2.4 * mm
-    label_gap = 1.2 * mm
-    option_gap = 4 * mm
-    text_y = top_y - 13
-    square_y = top_y - height + ((height - square_size) / 2) + (1 * mm) - 2
-
-    base_text = "Ocorrência de ferrugem:"
-    cnv.setFont(FONT_REGULAR, font_size)
-    cnv.drawString(x + 3, text_y, base_text)
-
-    base_text_w = pdfmetrics.stringWidth(base_text, FONT_REGULAR, font_size)
-    sim_x = x + 3 + base_text_w + (2 * mm)
-    cnv.rect(sim_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(sim_x + square_size + label_gap, text_y, "SIM")
-
-    sim_label_w = pdfmetrics.stringWidth("SIM", FONT_REGULAR, font_size)
-    nao_x = sim_x + square_size + label_gap + sim_label_w + option_gap
-    cnv.rect(nao_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(nao_x + square_size + label_gap, text_y, "NÃO")
+def draw_safrinha_option_cell(
+    cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float, selected: str = ""
+) -> None:
+    draw_yes_no_option_cell(cnv, x, top_y, height, "Cultiva soja em safrinha:", selected)
 
 
-def draw_safrinha_register_option_cell(cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float) -> None:
-    font_size = 7
-    square_size = 2.4 * mm
-    label_gap = 1.2 * mm
-    option_gap = 4 * mm
-    text_y = top_y - 13
-    square_y = top_y - height + ((height - square_size) / 2) + (1 * mm) - 2
-
-    base_text = "Realizou Cadastro da safrinha:"
-    cnv.setFont(FONT_REGULAR, font_size)
-    cnv.drawString(x + 3, text_y, base_text)
-
-    base_text_w = pdfmetrics.stringWidth(base_text, FONT_REGULAR, font_size)
-    sim_x = x + 3 + base_text_w + (2 * mm)
-    cnv.rect(sim_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(sim_x + square_size + label_gap, text_y, "SIM")
-
-    sim_label_w = pdfmetrics.stringWidth("SIM", FONT_REGULAR, font_size)
-    nao_x = sim_x + square_size + label_gap + sim_label_w + option_gap
-    cnv.rect(nao_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(nao_x + square_size + label_gap, text_y, "NÃO")
+def draw_occurrence_option_cell(
+    cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float, selected: str = ""
+) -> None:
+    draw_yes_no_option_cell(cnv, x, top_y, height, "Ocorrência de ferrugem:", selected)
 
 
-def draw_lab_confirmation_option_cell(cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float) -> None:
-    font_size = 7
-    square_size = 2.4 * mm
-    label_gap = 1.2 * mm
-    option_gap = 4 * mm
-    text_y = top_y - 13
-    square_y = top_y - height + ((height - square_size) / 2) + (1 * mm) - 2
+def draw_safrinha_register_option_cell(
+    cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float, selected: str = ""
+) -> None:
+    draw_yes_no_option_cell(cnv, x, top_y, height, "Realizou Cadastro da safrinha:", selected)
 
-    base_text = "Ocorrência confirmada por laboratório:"
-    cnv.setFont(FONT_REGULAR, font_size)
-    cnv.drawString(x + 3, text_y, base_text)
 
-    base_text_w = pdfmetrics.stringWidth(base_text, FONT_REGULAR, font_size)
-    sim_x = x + 3 + base_text_w + (2 * mm)
-    cnv.rect(sim_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(sim_x + square_size + label_gap, text_y, "SIM")
-
-    sim_label_w = pdfmetrics.stringWidth("SIM", FONT_REGULAR, font_size)
-    nao_x = sim_x + square_size + label_gap + sim_label_w + option_gap
-    cnv.rect(nao_x, square_y, square_size, square_size, stroke=1, fill=0)
-    cnv.drawString(nao_x + square_size + label_gap, text_y, "NÃO")
+def draw_lab_confirmation_option_cell(
+    cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float, selected: str = ""
+) -> None:
+    draw_yes_no_option_cell(cnv, x, top_y, height, "Ocorrência confirmada por laboratório:", selected)
 
 
 def draw_plain_label_cell(cnv: canvas.Canvas, x: float, top_y: float, text: str) -> None:
@@ -473,7 +438,7 @@ def draw_plain_label_cell(cnv: canvas.Canvas, x: float, top_y: float, text: str)
     cnv.drawString(x + 3, top_y - 13, text)
 
 
-def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: float) -> float:
+def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str | bool]) -> float:
     row_h = 8 * mm
     left_w = 62 * mm
     square_size = 2.4 * mm
@@ -493,15 +458,15 @@ def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: floa
     cnv.drawString(right_x + 3, text_y, "Origem das sementes safra/safrinha:")
 
     propria_x = right_x + 48 * mm
-    cnv.rect(propria_x, square_y, square_size, square_size, stroke=1, fill=0)
+    draw_marked_square(cnv, propria_x, square_y, square_size, bool(data.get("origem_propria")))
     cnv.drawString(propria_x + square_size + label_gap, text_y, "Própria")
 
     empresa_x = propria_x + square_size + label_gap + pdfmetrics.stringWidth("Própria", FONT_REGULAR, 7) + option_gap
-    cnv.rect(empresa_x, square_y, square_size, square_size, stroke=1, fill=0)
+    draw_marked_square(cnv, empresa_x, square_y, square_size, bool(data.get("origem_empresa")))
     cnv.drawString(empresa_x + square_size + label_gap, text_y, "Empresa")
 
     outra_x = empresa_x + square_size + label_gap + pdfmetrics.stringWidth("Empresa", FONT_REGULAR, 7) + option_gap
-    cnv.rect(outra_x, square_y, square_size, square_size, stroke=1, fill=0)
+    draw_marked_square(cnv, outra_x, square_y, square_size, bool(data.get("origem_outra")))
     cnv.drawString(outra_x + square_size + label_gap, text_y, "Outra")
 
     cnv.restoreState()
@@ -611,7 +576,7 @@ def draw_verification_block(
 
         cnv.setFont(FONT_REGULAR, font_size)
         if checkbox_only:
-            cnv.rect(text_x, square_y, square_size, square_size, stroke=1, fill=0)
+            draw_marked_square(cnv, text_x, square_y, square_size, bool(item.get("checked", False)))
             text_obj = cnv.beginText()
             text_obj.setTextOrigin(text_x + square_size + label_gap, current_top_y - 8)
             text_obj.setFont(FONT_REGULAR, font_size)
@@ -648,11 +613,12 @@ def draw_verification_block(
 
         cnv.drawString(text_x, current_top_y - 8, text)
         cnv.setFont(FONT_REGULAR, option_font_size)
-        cnv.rect(options_start_x, square_y, square_size, square_size, stroke=1, fill=0)
+        selected = str(item.get("marked_option", ""))
+        draw_marked_square(cnv, options_start_x, square_y, square_size, selected == left_option)
         cnv.drawString(options_start_x + square_size + label_gap, option_text_y, left_option)
 
         right_square_x = options_start_x + square_size + label_gap + left_label_w + option_gap
-        cnv.rect(right_square_x, square_y, square_size, square_size, stroke=1, fill=0)
+        draw_marked_square(cnv, right_square_x, square_y, square_size, selected == right_option)
         cnv.drawString(right_square_x + square_size + label_gap, option_text_y, right_option)
 
     cnv.restoreState()
@@ -744,11 +710,18 @@ def build_pdf(data: dict[str, str]) -> bytes:
         y,
         CONTENT_WIDTH,
         [
-            {"text": "\u2022 A \u00e1rea fiscalizada possui cadastro no sistema da Ag\u00eancia IDARON:"},
-            {"text": "\u2022 O cadastro foi realizado dentro do prazo Oficial:"},
+            {
+                "text": "\u2022 A \u00e1rea fiscalizada possui cadastro no sistema da Ag\u00eancia IDARON:",
+                "marked_option": data["cadastro_idaron_status"],
+            },
+            {
+                "text": "\u2022 O cadastro foi realizado dentro do prazo Oficial:",
+                "marked_option": data["cadastro_prazo_status"],
+            },
             {
                 "text": "Fica o produtor notificado, conforme Art. 10\u00b0 e par\u00e1grafos da Instru\u00e7\u00e3o Normativa n\u00ba 10/2024 a realizar o DESVITALIZAR em um prazo de 10 dias.",
                 "checkbox_only": True,
+                "checked": bool(data["notificacao_produtor_checked"]),
                 "bold_terms": ["produtor notificado", "DESVITALIZAR"],
             },
         ],
@@ -760,6 +733,7 @@ def build_pdf(data: dict[str, str]) -> bytes:
         y,
         CONTENT_WIDTH,
         "A(s) notifica\u00e7\u00e3o(\u00f5es) n\u00e3o foi(ram) atendida(s) dentro do prazo, caracterizando irregularidade(s) e o descumprimento da Instru\u00e7\u00e3o Normativa n\u00b0 10/2024-IDARON, tendo sido lavrado Auto de Infra\u00e7\u00e3o N\u00b0 ______ em __/___/20__",
+        checked=bool(data["irregularidade_checked"]),
     )
     y -= empty_row_h + 1 * mm
     additional_obs_h = draw_small_text_block(
@@ -771,18 +745,18 @@ def build_pdf(data: dict[str, str]) -> bytes:
     )
     y -= additional_obs_h
     additional_rows_h = draw_split_standard_rows(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, num_rows=4)
-    draw_monitoring_option_cell(cnv, LEFT_MARGIN, y, CONTENT_WIDTH / 2, 8 * mm)
-    draw_safrinha_option_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y, CONTENT_WIDTH / 2, 8 * mm)
-    draw_occurrence_option_cell(cnv, LEFT_MARGIN, y - (8 * mm), CONTENT_WIDTH / 2, 8 * mm)
-    draw_safrinha_register_option_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (8 * mm), CONTENT_WIDTH / 2, 8 * mm)
-    draw_lab_confirmation_option_cell(cnv, LEFT_MARGIN, y - (16 * mm), CONTENT_WIDTH / 2, 8 * mm)
+    draw_monitoring_option_cell(cnv, LEFT_MARGIN, y, CONTENT_WIDTH / 2, 8 * mm, data["monitoramento_ferrugem_status"])
+    draw_safrinha_option_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y, CONTENT_WIDTH / 2, 8 * mm, data["cultiva_soja_safrinha_status"])
+    draw_occurrence_option_cell(cnv, LEFT_MARGIN, y - (8 * mm), CONTENT_WIDTH / 2, 8 * mm, data["ocorrencia_ferrugem_status"])
+    draw_safrinha_register_option_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (8 * mm), CONTENT_WIDTH / 2, 8 * mm, data["cadastro_safrinha_status"])
+    draw_lab_confirmation_option_cell(cnv, LEFT_MARGIN, y - (16 * mm), CONTENT_WIDTH / 2, 8 * mm, data["ocorrencia_laboratorio_status"])
     draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (16 * mm), "Data de plantio:")
     draw_plain_label_cell(cnv, LEFT_MARGIN, y - (24 * mm), "Laboratório:")
     draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (24 * mm), "Outra(s) cultivos(s) safrinha:")
     y -= additional_rows_h
     blank_row_h = draw_standard_empty_row(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
     y -= blank_row_h
-    seed_origin_h = draw_seed_origin_row(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
+    seed_origin_h = draw_seed_origin_row(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
     y -= seed_origin_h
     other_obs_h = draw_other_observations_box(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
     y -= other_obs_h + 1 * mm
@@ -795,64 +769,87 @@ def build_pdf(data: dict[str, str]) -> bytes:
 
 register_fonts()
 
-with st.sidebar:
-    st.header("Dados do PDF")
+yes_no_options = ["", "SIM", "NÃO"]
 
-    numero = st.text_input("Número", value="")
-    data_emissao = st.date_input("Data", value=date.today(), format="DD/MM/YYYY")
-    responsavel = st.text_input("Responsável", value="")
+st.header("Formulário do PDF")
+with st.form("fai_pdf_form"):
+    top_cols = st.columns(3)
+    with top_cols[0]:
+        numero = st.text_input("Número", value="")
+    with top_cols[1]:
+        data_emissao = st.date_input("Data", value=date.today(), format="DD/MM/YYYY")
+    with top_cols[2]:
+        responsavel = st.text_input("Responsável", value="")
 
-    st.divider()
-    st.subheader("Identificação")
-    produtor = st.text_input("Produtor / Cliente", value="")
-    propriedade = st.text_input("Propriedade", value="")
-    cod_propriedade = st.text_input("Cod. propriedade", value="")
-    logradouro = st.text_input("Logra douro (Setor/Lh/Lt...)", value="")
-    municipio = st.text_input("Município", value="")
-    area_propriedade = st.text_input("Área da propriedade (ha)", value="")
-    area_soja_cadastrada = st.text_input("Área de soja cadastrada (ha)", value="")
-    cod_sisvegetal = st.text_input("Cod. SISVEGETAL", value="")
-    sojicultor = st.text_input("Sojicultor", value="")
-    cpf = st.text_input("CPF", value="")
-    email = st.text_input("e-mail", value="")
-    fone = st.text_input("Fone", value="")
-    coord_s = st.text_input("Coordenada S", value="")
-    coord_w = st.text_input("Coordenada W", value="")
-    coord_confere = st.selectbox("Coordenada confere no sistema", ["", "SIM", "NÃO"], index=0)
-    uf = st.text_input("UF", value="")
+    with st.expander("Identificação", expanded=True):
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            produtor = st.text_input("Produtor / Cliente", value="")
+            propriedade = st.text_input("Propriedade", value="")
+            cod_propriedade = st.text_input("Cod. propriedade", value="")
+            municipio = st.text_input("Município", value="")
+            sojicultor = st.text_input("Sojicultor", value="")
+        with col_b:
+            logradouro = st.text_input("Logradouro (Setor/Lh/Lt...)", value="")
+            area_propriedade = st.text_input("Área da propriedade (ha)", value="")
+            area_soja_cadastrada = st.text_input("Área de soja cadastrada (ha)", value="")
+            cod_sisvegetal = st.text_input("Cod. SISVEGETAL", value="")
+            cpf = st.text_input("CPF", value="")
+        with col_c:
+            email = st.text_input("e-mail", value="")
+            fone = st.text_input("Fone", value="")
+            coord_s = st.text_input("Coordenada S", value="")
+            coord_w = st.text_input("Coordenada W", value="")
+            coord_confere = st.selectbox("Coordenada confere no sistema", yes_no_options, index=0)
+            uf = st.text_input("UF", value="")
 
-    st.divider()
-    st.subheader("Deslocamento")
-    ulsav_de = st.text_input("ULSAV de", value="")
-    regional = st.text_input("Regional", value="")
-    placa_veiculo = st.text_input("Placa do veículo", value="")
-    hod_inicial = st.text_input("HOD. inicial", value="")
-    hod_final = st.text_input("HOD. final", value="")
-    dist_ulsav_km = st.text_input("Dist. da ULSAV (km)", value="")
+    with st.expander("Deslocamento", expanded=False):
+        col_a, col_b = st.columns(2)
+        with col_a:
+            ulsav_de = st.text_input("ULSAV de", value="")
+            placa_veiculo = st.text_input("Placa do veículo", value="")
+            hod_inicial = st.text_input("HOD. inicial", value="")
+        with col_b:
+            regional = st.text_input("Regional", value="")
+            hod_final = st.text_input("HOD. final", value="")
+            dist_ulsav_km = st.text_input("Dist. da ULSAV (km)", value="")
 
-    st.divider()
-    st.subheader("Área e cultura")
-    cultura = st.text_input("Cultura", value="")
-    area = st.text_input("Área", value="")
-    talhao = st.text_input("Talhão", value="")
+    with st.expander("Cabeçalho e conteúdo", expanded=False):
+        titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
+        subtitulo = st.text_input(
+            "Subtítulo",
+            value="ESTABELECIDA PELA INSTRUÇÃO NORMATIVA N° 04/2026/IDARON-PROCFAS",
+        )
+        observacoes = st.text_area(
+            "Observações",
+            value="",
+            height=180,
+            placeholder="Digite aqui o conteúdo que deve sair no PDF.",
+        )
 
-    st.divider()
-    st.subheader("Cabeçalho")
-    titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
-    subtitulo = st.text_input(
-        "Subtítulo",
-        value="ESTABELECIDA PELA INSTRUÇÃO NORMATIVA N° 04/2026/IDARON-PROCFAS",
-    )
+    with st.expander("Quadradinhos do PDF", expanded=True):
+        ver_a, ver_b = st.columns(2)
+        with ver_a:
+            cadastro_idaron_status = st.selectbox("Área possui cadastro na Agência IDARON", yes_no_options, index=0)
+            cadastro_prazo_status = st.selectbox("Cadastro realizado dentro do prazo oficial", yes_no_options, index=0)
+            notificacao_produtor_checked = st.checkbox("Marcar notificação do produtor", value=False)
+            irregularidade_checked = st.checkbox("Marcar irregularidade / auto de infração", value=False)
+        with ver_b:
+            monitoramento_ferrugem_status = st.selectbox("Realiza monitoramento da ferrugem", yes_no_options, index=0)
+            cultiva_soja_safrinha_status = st.selectbox("Cultiva soja em safrinha", yes_no_options, index=0)
+            ocorrencia_ferrugem_status = st.selectbox("Ocorrência de ferrugem", yes_no_options, index=0)
+            cadastro_safrinha_status = st.selectbox("Realizou cadastro da safrinha", yes_no_options, index=0)
+            ocorrencia_laboratorio_status = st.selectbox("Ocorrência confirmada por laboratório", yes_no_options, index=0)
 
-    st.divider()
-    st.subheader("Conteúdo")
-    observacoes = st.text_area(
-        "Observações",
-        value="",
-        height=220,
-        placeholder="Digite aqui o conteúdo que deve sair no PDF.",
-    )
+        origem_cols = st.columns(3)
+        with origem_cols[0]:
+            origem_propria = st.checkbox("Origem da semente: Própria", value=False)
+        with origem_cols[1]:
+            origem_empresa = st.checkbox("Origem da semente: Empresa", value=False)
+        with origem_cols[2]:
+            origem_outra = st.checkbox("Origem da semente: Outra", value=False)
 
+    st.form_submit_button("Atualizar PDF", width="stretch")
 
 st.title("FAI Vegetal")
 st.caption("Base simplificada: o documento agora é gerado como PDF, sem depender da impressão HTML do navegador.")
@@ -883,12 +880,24 @@ document_data = {
     "hod_inicial": hod_inicial.strip(),
     "hod_final": hod_final.strip(),
     "dist_ulsav_km": dist_ulsav_km.strip(),
-    "cultura": cultura.strip(),
-    "area": area.strip(),
-    "talhao": talhao.strip(),
+    "cultura": "",
+    "area": "",
+    "talhao": "",
     "titulo": titulo.strip() or "FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA",
     "subtitulo": subtitulo.strip() or "ESTABELECIDA PELA INSTRUÇÃO NORMATIVA",
     "observacoes": observacoes.strip(),
+    "cadastro_idaron_status": cadastro_idaron_status.strip(),
+    "cadastro_prazo_status": cadastro_prazo_status.strip(),
+    "notificacao_produtor_checked": notificacao_produtor_checked,
+    "irregularidade_checked": irregularidade_checked,
+    "monitoramento_ferrugem_status": monitoramento_ferrugem_status.strip(),
+    "cultiva_soja_safrinha_status": cultiva_soja_safrinha_status.strip(),
+    "ocorrencia_ferrugem_status": ocorrencia_ferrugem_status.strip(),
+    "cadastro_safrinha_status": cadastro_safrinha_status.strip(),
+    "ocorrencia_laboratorio_status": ocorrencia_laboratorio_status.strip(),
+    "origem_propria": origem_propria,
+    "origem_empresa": origem_empresa,
+    "origem_outra": origem_outra,
 }
 
 pdf_bytes = build_pdf(document_data)
