@@ -29,6 +29,10 @@ st.markdown(
         margin-right: auto;
         padding-top: 1.5rem;
     }
+    .stApp h1,
+    .stApp h2 {
+        text-align: center;
+    }
     </style>
     """,
     unsafe_allow_html=True,
