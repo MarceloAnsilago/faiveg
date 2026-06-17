@@ -728,7 +728,7 @@ def build_pdf(data: dict[str, str]) -> bytes:
     estado_logo = Path("assets/logo-cropped.png")
 
     if idaron_logo.exists():
-        draw_image_scaled(cnv, idaron_logo, LEFT_MARGIN, y - 17 * mm, 24 * mm)
+        draw_image_scaled(cnv, idaron_logo, LEFT_MARGIN + (15 * mm), y - 17 * mm, 24 * mm)
 
     if estado_logo.exists():
         center_w = 22 * mm
