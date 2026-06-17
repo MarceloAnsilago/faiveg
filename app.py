@@ -239,7 +239,8 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(x + width - 19 * mm, third_top_y, x + width - 19 * mm, third_top_y - row_h)
     cnv.drawString(x + 2, third_top_y - 6 - (2 * mm), "MUNICÍPIO:")
     cnv.drawString(x + municipio_label_w + 2, third_top_y - 6 - (2 * mm), data["municipio"])
-    cnv.drawString(x + width - area_label_w + 2, third_top_y - 6 - (2 * mm), "Área da propriedade (ha):")
+    cnv.drawString(x + width - area_label_w + 2, third_top_y - 5 - (2 * mm), "Área da")
+    cnv.drawString(x + width - area_label_w + 2, third_top_y - 11 - (2 * mm), "propriedade (ha):")
     cnv.drawString(x + width - 19 * mm + 2, third_top_y - 6 - (2 * mm), data["area_propriedade"])
 
     fourth_top_y = third_top_y - row_h
@@ -814,7 +815,7 @@ with st.form("fai_pdf_form"):
             hod_final = st.text_input("HOD. final", value="")
             dist_ulsav_km = st.text_input("Dist. da ULSAV (km)", value="")
 
-    with st.expander("Cabeçalho e conteúdo", expanded=False):
+    with st.expander("OBSERVAÇÕES ADICIONAIS,", expanded=True):
         titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
         subtitulo = st.text_input(
             "Subtítulo",
@@ -827,7 +828,6 @@ with st.form("fai_pdf_form"):
             placeholder="Digite aqui o conteúdo que deve sair no PDF.",
         )
 
-    with st.expander("Quadradinhos do PDF", expanded=True):
         ver_a, ver_b = st.columns(2)
         with ver_a:
             cadastro_idaron_status = st.selectbox("Área possui cadastro na Agência IDARON", yes_no_options, index=0)
