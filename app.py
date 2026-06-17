@@ -43,6 +43,7 @@ CONTENT_WIDTH = PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN
 
 FONT_REGULAR = "Helvetica"
 FONT_BOLD = "Helvetica-Bold"
+FILL_FONT_SIZE = 7
 
 
 def register_fonts() -> None:
@@ -153,6 +154,15 @@ def draw_signature_line(cnv: canvas.Canvas, x: float, y: float, width: float, la
     cnv.drawString(x + (width - label_width) / 2, y - 11, label)
 
 
+def draw_fitted_fill(cnv: canvas.Canvas, x: float, y: float, width: float, value: str) -> None:
+    value = str(value or "").strip()
+    if not value:
+        return
+    font_size = fit_text(cnv, value, FONT_REGULAR, FILL_FONT_SIZE, 5.5, width)
+    cnv.setFont(FONT_REGULAR, font_size)
+    cnv.drawString(x, y, value)
+
+
 def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str]) -> float:
     top_row_h = 8 * mm
     bottom_row_h = 8 * mm
@@ -179,9 +189,7 @@ def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: f
         value = str(value or "").strip()
         if not value:
             return
-        font_size = fit_text(cnv, value, FONT_BOLD, 7.5, 5.5, cell_width - 4)
-        cnv.setFont(FONT_BOLD, font_size)
-        cnv.drawString(cell_x + 2, cell_top_y - 14, value)
+        draw_fitted_fill(cnv, cell_x + 2, cell_top_y - 14, cell_width - 4, value)
 
     cnv.rect(x, top_y - top_row_h, width, top_row_h, stroke=1, fill=0)
     cnv.line(x + width / 2, top_y, x + width / 2, top_y - top_row_h)
@@ -231,15 +239,19 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(x + width - code_col_w, top_y, x + width - code_col_w, top_y - row_h)
     cnv.drawString(x + 2, top_y - 5 - (2 * mm), "NOME DA")
     cnv.drawString(x + 2, top_y - 11 - (2 * mm), "PROPRIEDADE:")
-    cnv.drawString(x + property_name_label_w + 2, top_y - 6, data["propriedade"])
-    cnv.drawString(x + width - code_col_w + 2, top_y - 6, f"COD. PROPRIEDADE: {data['cod_propriedade']}".strip())
+    draw_fitted_fill(cnv, x + property_name_label_w + 2, top_y - 14, width - property_name_label_w - code_col_w - 4, data["propriedade"])
+    cnv.setFont(FONT_REGULAR, 5)
+    cnv.drawString(x + width - code_col_w + 2, top_y - 5, "COD. PROPRIEDADE:")
+    draw_fitted_fill(cnv, x + width - code_col_w + 2, top_y - 14, code_col_w - 4, data["cod_propriedade"])
+    cnv.setFont(FONT_REGULAR, 5)
 
     second_top_y = top_y - row_h
     cnv.rect(x, second_top_y - row_h, width, row_h, stroke=1, fill=0)
     cnv.line(x + logradouro_label_w, second_top_y, x + logradouro_label_w, second_top_y - row_h)
     cnv.drawString(x + 2, second_top_y - 5 - (2 * mm), "LOGRADOURO")
     cnv.drawString(x + 2, second_top_y - 11 - (2 * mm), "(Setor/Lh/Lt...):")
-    cnv.drawString(x + logradouro_label_w + 2, second_top_y - 6 - (2 * mm), data["logradouro"])
+    draw_fitted_fill(cnv, x + logradouro_label_w + 2, second_top_y - 6 - (2 * mm), width - logradouro_label_w - 4, data["logradouro"])
+    cnv.setFont(FONT_REGULAR, 5)
 
     third_top_y = second_top_y - row_h
     cnv.rect(x, third_top_y - row_h, width, row_h, stroke=1, fill=0)
@@ -247,20 +259,25 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(x + width - area_label_w, third_top_y, x + width - area_label_w, third_top_y - row_h)
     cnv.line(x + width - 19 * mm, third_top_y, x + width - 19 * mm, third_top_y - row_h)
     cnv.drawString(x + 2, third_top_y - 6 - (2 * mm), "MUNICÍPIO:")
-    cnv.drawString(x + municipio_label_w + 2, third_top_y - 6 - (2 * mm), data["municipio"])
+    draw_fitted_fill(cnv, x + municipio_label_w + 2, third_top_y - 6 - (2 * mm), width - municipio_label_w - area_label_w - 19 * mm - 4, data["municipio"])
+    cnv.setFont(FONT_REGULAR, 5)
     cnv.drawString(x + width - area_label_w + 2, third_top_y - 5 - (2 * mm), "Área da")
     cnv.drawString(x + width - area_label_w + 2, third_top_y - 11 - (2 * mm), "propriedade (ha):")
-    cnv.drawString(x + width - 19 * mm + 2, third_top_y - 6 - (2 * mm), data["area_propriedade"])
+    draw_fitted_fill(cnv, x + width - 19 * mm + 2, third_top_y - 6 - (2 * mm), 19 * mm - 4, data["area_propriedade"])
+    cnv.setFont(FONT_REGULAR, 5)
 
     fourth_top_y = third_top_y - row_h
     cnv.rect(x, fourth_top_y - row_h, width, row_h, stroke=1, fill=0)
     cnv.line(x + soja_label_w, fourth_top_y, x + soja_label_w, fourth_top_y - row_h)
     cnv.line(x + width - sisveg_label_w - sisveg_value_w, fourth_top_y, x + width - sisveg_label_w - sisveg_value_w, fourth_top_y - row_h)
     cnv.line(x + width - sisveg_value_w, fourth_top_y, x + width - sisveg_value_w, fourth_top_y - row_h)
-    cnv.drawString(x + 2, fourth_top_y - 6 - (2 * mm), "Área de soja cadastrada (ha):")
-    cnv.drawString(x + soja_label_w + 2, fourth_top_y - 6 - (2 * mm), data["area_soja_cadastrada"])
+    cnv.drawString(x + 2, fourth_top_y - 5 - (2 * mm), "Área de soja")
+    cnv.drawString(x + 2, fourth_top_y - 11 - (2 * mm), "cadastrada (ha):")
+    draw_fitted_fill(cnv, x + soja_label_w + 2, fourth_top_y - 6 - (2 * mm), width - soja_label_w - sisveg_label_w - sisveg_value_w - 4, data["area_soja_cadastrada"])
+    cnv.setFont(FONT_REGULAR, 5)
     cnv.drawString(x + width - sisveg_label_w - sisveg_value_w + 2, fourth_top_y - 6 - (2 * mm), "COD. SISVEGETAL:")
-    cnv.drawString(x + width - sisveg_value_w + 2, fourth_top_y - 6 - (2 * mm), data["cod_sisvegetal"])
+    draw_fitted_fill(cnv, x + width - sisveg_value_w + 2, fourth_top_y - 6 - (2 * mm), sisveg_value_w - 4, data["cod_sisvegetal"])
+    cnv.setFont(FONT_REGULAR, 5)
 
     fifth_top_y = fourth_top_y - row_h
     cnv.rect(x, fifth_top_y - row_h, width, row_h, stroke=1, fill=0)
@@ -268,9 +285,11 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(x + width - cpf_label_w - cpf_value_w, fifth_top_y, x + width - cpf_label_w - cpf_value_w, fifth_top_y - row_h)
     cnv.line(x + width - cpf_value_w, fifth_top_y, x + width - cpf_value_w, fifth_top_y - row_h)
     cnv.drawString(x + 2, fifth_top_y - 6 - (2 * mm), "SOJICULTOR:")
-    cnv.drawString(x + sojicultor_label_w + 2, fifth_top_y - 6 - (2 * mm), data["sojicultor"])
+    draw_fitted_fill(cnv, x + sojicultor_label_w + 2, fifth_top_y - 6 - (2 * mm), width - sojicultor_label_w - cpf_label_w - cpf_value_w - 4, data["sojicultor"])
+    cnv.setFont(FONT_REGULAR, 5)
     cnv.drawString(x + width - cpf_label_w - cpf_value_w + 2, fifth_top_y - 6 - (2 * mm), "CPF:")
-    cnv.drawString(x + width - cpf_value_w + 2, fifth_top_y - 6 - (2 * mm), data["cpf"])
+    draw_fitted_fill(cnv, x + width - cpf_value_w + 2, fifth_top_y - 6 - (2 * mm), cpf_value_w - 4, data["cpf"])
+    cnv.setFont(FONT_REGULAR, 5)
 
     sixth_top_y = fifth_top_y - row_h
     cnv.rect(x, sixth_top_y - row_h, width, row_h, stroke=1, fill=0)
@@ -278,9 +297,11 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(x + width - fone_label_w - fone_value_w, sixth_top_y, x + width - fone_label_w - fone_value_w, sixth_top_y - row_h)
     cnv.line(x + width - fone_value_w, sixth_top_y, x + width - fone_value_w, sixth_top_y - row_h)
     cnv.drawString(x + 2, sixth_top_y - 6 - (2 * mm), "e-mail:")
-    cnv.drawString(x + email_label_w + 2, sixth_top_y - 6 - (2 * mm), data["email"])
+    draw_fitted_fill(cnv, x + email_label_w + 2, sixth_top_y - 6 - (2 * mm), width - email_label_w - fone_label_w - fone_value_w - 4, data["email"])
+    cnv.setFont(FONT_REGULAR, 5)
     cnv.drawString(x + width - fone_label_w - fone_value_w + 2, sixth_top_y - 6 - (2 * mm), "Fone:")
-    cnv.drawString(x + width - fone_value_w + 2, sixth_top_y - 6 - (2 * mm), data["fone"])
+    draw_fitted_fill(cnv, x + width - fone_value_w + 2, sixth_top_y - 6 - (2 * mm), fone_value_w - 4, data["fone"])
+    cnv.setFont(FONT_REGULAR, 5)
 
     seventh_top_y = sixth_top_y - row_h
     coord_half_w = (width - coord_label_w) / 2
@@ -804,11 +825,10 @@ with st.form("fai_pdf_form"):
     with st.expander("Identificação", expanded=True):
         col_a, col_b, col_c = st.columns(3)
         with col_a:
-            produtor = st.text_input("Produtor / Cliente", value="")
+            sojicultor = st.text_input("Sojicultor", value="")
             propriedade = st.text_input("Propriedade", value="")
             cod_propriedade = st.text_input("Cod. propriedade", value="")
             municipio = st.text_input("Município", value="")
-            sojicultor = st.text_input("Sojicultor", value="")
         with col_b:
             logradouro = st.text_input("Logradouro (Setor/Lh/Lt...)", value="")
             area_propriedade = st.text_input("Área da propriedade (ha)", value="")
@@ -866,7 +886,7 @@ document_data = {
     "numero": numero.strip(),
     "data_emissao": data_emissao.strftime("%d/%m/%Y"),
     "responsavel": responsavel.strip(),
-    "produtor": produtor.strip(),
+    "produtor": sojicultor.strip(),
     "propriedade": propriedade.strip(),
     "cod_propriedade": cod_propriedade.strip(),
     "logradouro": logradouro.strip(),
