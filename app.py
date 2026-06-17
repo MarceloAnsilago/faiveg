@@ -163,6 +163,16 @@ def draw_fitted_fill(cnv: canvas.Canvas, x: float, y: float, width: float, value
     cnv.drawString(x, y, value)
 
 
+def draw_centered_text(cnv: canvas.Canvas, x: float, top_y: float, width: float, height: float, text: str, font_size: float = 7) -> None:
+    text = str(text or "").strip()
+    if not text:
+        return
+    cnv.setFont(FONT_REGULAR, font_size)
+    text_w = pdfmetrics.stringWidth(text, FONT_REGULAR, font_size)
+    text_y = top_y - (height / 2) - (font_size / 3)
+    cnv.drawString(x + ((width - text_w) / 2), text_y, text)
+
+
 def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str]) -> float:
     top_row_h = 8 * mm
     bottom_row_h = 8 * mm
@@ -330,10 +340,10 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(confirm_start_x + (confirm_cell_w * 3), eighth_top_y, confirm_start_x + (confirm_cell_w * 3), eighth_top_y - row_h)
     cnv.drawString(x + 2, eighth_top_y - 6, "COORDENADA DA PROPRIEDADE CONFERE COM A INFORMADA NO SISTEMA?")
     cnv.drawString(confirm_start_x + 2, eighth_top_y - 6, "SIM")
-    draw_fitted_fill(cnv, confirm_start_x + confirm_cell_w + 2, eighth_top_y - 6, confirm_cell_w - 4, sim_mark)
+    draw_centered_text(cnv, confirm_start_x + confirm_cell_w, eighth_top_y, confirm_cell_w, row_h, sim_mark)
     cnv.setFont(FONT_REGULAR, 5)
     cnv.drawString(confirm_start_x + (confirm_cell_w * 2) + 2, eighth_top_y - 6, "NÃO")
-    draw_fitted_fill(cnv, confirm_start_x + (confirm_cell_w * 3) + 2, eighth_top_y - 6, confirm_cell_w - 4, nao_mark)
+    draw_centered_text(cnv, confirm_start_x + (confirm_cell_w * 3), eighth_top_y, confirm_cell_w, row_h, nao_mark)
     cnv.setFont(FONT_REGULAR, 5)
 
     cnv.restoreState()
