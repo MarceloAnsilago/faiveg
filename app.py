@@ -471,9 +471,11 @@ def draw_lab_confirmation_option_cell(
     draw_yes_no_option_cell(cnv, x, top_y, height, "Ocorrência confirmada por laboratório:", selected)
 
 
-def draw_plain_label_cell(cnv: canvas.Canvas, x: float, top_y: float, text: str) -> None:
+def draw_plain_label_cell(cnv: canvas.Canvas, x: float, top_y: float, width: float, text: str, value: str = "") -> None:
     cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(x + 3, top_y - 13, text)
+    label_w = pdfmetrics.stringWidth(text, FONT_REGULAR, 7)
+    draw_fitted_fill(cnv, x + 3 + label_w + 3, top_y - 13, width - label_w - 9, value)
 
 
 def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str | bool]) -> float:
@@ -493,6 +495,8 @@ def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: floa
 
     cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(x + 3, text_y, "Estimativa de perda (%):")
+    draw_fitted_fill(cnv, x + 3 + pdfmetrics.stringWidth("Estimativa de perda (%):", FONT_REGULAR, 7) + 3, text_y, left_w - 9 - pdfmetrics.stringWidth("Estimativa de perda (%):", FONT_REGULAR, 7), str(data.get("estimativa_perda", "")))
+    cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(right_x + 3, text_y, "Origem das sementes safra/safrinha:")
 
     propria_x = right_x + 48 * mm
@@ -511,7 +515,7 @@ def draw_seed_origin_row(cnv: canvas.Canvas, x: float, top_y: float, width: floa
     return row_h
 
 
-def draw_other_observations_box(cnv: canvas.Canvas, x: float, top_y: float, width: float) -> float:
+def draw_other_observations_box(cnv: canvas.Canvas, x: float, top_y: float, width: float, text: str = "") -> float:
     row_h = 8 * mm
     box_h = row_h * 3
 
@@ -520,6 +524,14 @@ def draw_other_observations_box(cnv: canvas.Canvas, x: float, top_y: float, widt
     cnv.rect(x, top_y - box_h, width, box_h, stroke=1, fill=0)
     cnv.setFont(FONT_BOLD, 7)
     cnv.drawString(x + 3, top_y - 10, "Outras observações:")
+    cnv.setFont(FONT_REGULAR, 7)
+    cursor_y = top_y - 22
+    bottom_y = top_y - box_h + 6
+    for line in wrap_text(text, FONT_REGULAR, 7, width - 6):
+        if cursor_y < bottom_y:
+            break
+        cnv.drawString(x + 3, cursor_y, line)
+        cursor_y -= 9
     cnv.restoreState()
     return box_h
 
@@ -545,15 +557,25 @@ def draw_schedule_signature_block(cnv: canvas.Canvas, x: float, top_y: float, wi
     cnv.line(left_mid_x, top_y, left_mid_x, top_y - row_h)
     cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(x + 3, top_y - 13, "Horário:")
+    draw_fitted_fill(cnv, x + 3 + pdfmetrics.stringWidth("Horário:", FONT_REGULAR, 7) + 3, top_y - 13, left_mid_x - x - pdfmetrics.stringWidth("Horário:", FONT_REGULAR, 7) - 9, data["assinatura_horario"])
+    cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(left_mid_x + 3, top_y - 13, "Data:")
+    draw_fitted_fill(cnv, left_mid_x + 3 + pdfmetrics.stringWidth("Data:", FONT_REGULAR, 7) + 3, top_y - 13, split_x - left_mid_x - pdfmetrics.stringWidth("Data:", FONT_REGULAR, 7) - 9, data["assinatura_data"])
+    cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(split_x + 3, top_y - 13, "Local:")
+    draw_fitted_fill(cnv, split_x + 3 + pdfmetrics.stringWidth("Local:", FONT_REGULAR, 7) + 3, top_y - 13, width - left_w - pdfmetrics.stringWidth("Local:", FONT_REGULAR, 7) - 9, data["assinatura_local"])
+    cnv.setFont(FONT_REGULAR, 7)
 
     owner_header_y = top_y - row_h
     cnv.drawString(x + 3, owner_header_y - 13, "Proprietário, Produtor ou Responsável pelas Informações:")
     cnv.drawString(split_x + 3, owner_header_y - 13, "Carimbo e assinatura do servidor IDARON:")
 
     cnv.drawString(x + 3, owner_header_y - row_h - 13, "Nome:")
+    draw_fitted_fill(cnv, x + 3 + pdfmetrics.stringWidth("Nome:", FONT_REGULAR, 7) + 3, owner_header_y - row_h - 13, left_w - pdfmetrics.stringWidth("Nome:", FONT_REGULAR, 7) - 9, data["assinatura_nome"])
+    cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(x + 3, owner_header_y - (2 * row_h) - 13, "CPF:")
+    draw_fitted_fill(cnv, x + 3 + pdfmetrics.stringWidth("CPF:", FONT_REGULAR, 7) + 3, owner_header_y - (2 * row_h) - 13, left_w - pdfmetrics.stringWidth("CPF:", FONT_REGULAR, 7) - 9, data["assinatura_cpf"])
+    cnv.setFont(FONT_REGULAR, 7)
     cnv.drawString(x + 3, owner_header_y - (3 * row_h) - 13, "Assinatura:")
     servidor = str(data.get("responsavel", "")).strip()
     if servidor:
@@ -784,7 +806,7 @@ def build_pdf(data: dict[str, str]) -> bytes:
         LEFT_MARGIN,
         y,
         CONTENT_WIDTH,
-        "OBSERVA\u00c7\u00d5ES ADICIONAIS, conforme a Instru\u00e7\u00e3o Normativa n\u00ba 10/2024/IDARON-PROCFAS:",
+        "OBSERVA\u00c7\u00d5ES ADICIONAIS conforme a Instru\u00e7\u00e3o Normativa n\u00ba 10/2024/IDARON-PROCFAS:",
     )
     y -= additional_obs_h
     additional_rows_h = draw_split_standard_rows(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, num_rows=4)
@@ -793,15 +815,15 @@ def build_pdf(data: dict[str, str]) -> bytes:
     draw_occurrence_option_cell(cnv, LEFT_MARGIN, y - (8 * mm), CONTENT_WIDTH / 2, 8 * mm, data["ocorrencia_ferrugem_status"])
     draw_safrinha_register_option_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (8 * mm), CONTENT_WIDTH / 2, 8 * mm, data["cadastro_safrinha_status"])
     draw_lab_confirmation_option_cell(cnv, LEFT_MARGIN, y - (16 * mm), CONTENT_WIDTH / 2, 8 * mm, data["ocorrencia_laboratorio_status"])
-    draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (16 * mm), "Data de plantio:")
-    draw_plain_label_cell(cnv, LEFT_MARGIN, y - (24 * mm), "Laboratório:")
-    draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (24 * mm), "Outra(s) cultivos(s) safrinha:")
+    draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (16 * mm), CONTENT_WIDTH / 2, "Data de plantio:", data["data_plantio"])
+    draw_plain_label_cell(cnv, LEFT_MARGIN, y - (24 * mm), CONTENT_WIDTH / 2, "Laboratório:", data["laboratorio"])
+    draw_plain_label_cell(cnv, LEFT_MARGIN + (CONTENT_WIDTH / 2), y - (24 * mm), CONTENT_WIDTH / 2, "Outra(s) cultivos(s) safrinha:", data["outros_cultivos_safrinha"])
     y -= additional_rows_h
     blank_row_h = draw_standard_empty_row(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
     y -= blank_row_h
     seed_origin_h = draw_seed_origin_row(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
     y -= seed_origin_h
-    other_obs_h = draw_other_observations_box(cnv, LEFT_MARGIN, y, CONTENT_WIDTH)
+    other_obs_h = draw_other_observations_box(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data["observacoes"])
     y -= other_obs_h + 1 * mm
     schedule_signature_h = draw_schedule_signature_block(cnv, LEFT_MARGIN, y, CONTENT_WIDTH, data)
 
@@ -815,7 +837,7 @@ register_fonts()
 yes_no_options = ["", "SIM", "NÃO"]
 
 st.header("Formulário do PDF")
-with st.form("fai_pdf_form"):
+with st.container():
     with st.expander("Da IDARON:", expanded=True):
         col_a, col_b, col_c = st.columns(3)
         with col_a:
@@ -888,23 +910,25 @@ with st.form("fai_pdf_form"):
         with infracao_col_b:
             auto_infracao_data = st.text_input("Data do Auto de Infração", value="", placeholder="__/___/20__")
 
-    with st.expander("OBSERVAÇÕES ADICIONAIS,", expanded=True):
+    with st.expander("OBSERVAÇÕES ADICIONAIS", expanded=True):
         titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
         subtitulo = st.text_input(
             "Subtítulo",
             value="ESTABELECIDA PELA INSTRUÇÃO NORMATIVA N° 04/2026/IDARON-PROCFAS",
         )
-        observacoes = st.text_area(
-            "Observações",
-            value="",
-            height=180,
-            placeholder="Digite aqui o conteúdo que deve sair no PDF.",
-        )
-        monitoramento_ferrugem_status = st.selectbox("Realiza monitoramento da ferrugem", yes_no_options, index=0)
-        cultiva_soja_safrinha_status = st.selectbox("Cultiva soja em safrinha", yes_no_options, index=0)
-        ocorrencia_ferrugem_status = st.selectbox("Ocorrência de ferrugem", yes_no_options, index=0)
-        cadastro_safrinha_status = st.selectbox("Realizou cadastro da safrinha", yes_no_options, index=0)
-        ocorrencia_laboratorio_status = st.selectbox("Ocorrência confirmada por laboratório", yes_no_options, index=0)
+
+        obs_col_a, obs_col_b = st.columns(2)
+        with obs_col_a:
+            monitoramento_ferrugem_status = st.selectbox("Realiza monitoramento da ferrugem", yes_no_options, index=0)
+            ocorrencia_ferrugem_status = st.selectbox("Ocorrência de ferrugem", yes_no_options, index=0)
+            ocorrencia_laboratorio_status = st.selectbox("Ocorrência confirmada por laboratório", yes_no_options, index=0)
+            laboratorio = st.text_input("Laboratório", value="")
+            estimativa_perda = st.text_input("Estimativa de perda (%)", value="")
+        with obs_col_b:
+            cultiva_soja_safrinha_status = st.selectbox("Cultiva soja em safrinha", yes_no_options, index=0)
+            cadastro_safrinha_status = st.selectbox("Realizou cadastro da safrinha", yes_no_options, index=0)
+            data_plantio = st.text_input("Data de plantio", value="")
+            outros_cultivos_safrinha = st.text_input("Outra(s) cultivo(s) safrinha", value="")
 
         origem_cols = st.columns(3)
         with origem_cols[0]:
@@ -914,7 +938,37 @@ with st.form("fai_pdf_form"):
         with origem_cols[2]:
             origem_outra = st.checkbox("Origem da semente: Outra", value=False)
 
-    st.form_submit_button("Atualizar PDF", width="stretch")
+        observacoes = st.text_area(
+            "Outras observações",
+            value="",
+            height=120,
+            placeholder="Digite aqui o conteúdo que deve sair no campo Outras observações do PDF.",
+        )
+
+    with st.expander("Assinatura e responsável", expanded=True):
+        usar_dados_sojicultor = st.checkbox("Usar dados do sojicultor", value=True, key="usar_dados_sojicultor")
+        usar_dados_anterior = st.session_state.get("_usar_dados_sojicultor_anterior")
+        if usar_dados_sojicultor:
+            st.session_state["assinatura_nome"] = sojicultor
+            st.session_state["assinatura_cpf"] = cpf
+            st.session_state["assinatura_local"] = municipio
+        elif usar_dados_anterior is True:
+            st.session_state["assinatura_nome"] = ""
+            st.session_state["assinatura_cpf"] = ""
+            st.session_state["assinatura_local"] = ""
+        st.session_state["_usar_dados_sojicultor_anterior"] = usar_dados_sojicultor
+
+        assinatura_col_a, assinatura_col_b, assinatura_col_c = st.columns(3)
+        with assinatura_col_a:
+            assinatura_horario = st.text_input("Horário", value="", key="assinatura_horario")
+            assinatura_nome = st.text_input("Nome", value="", key="assinatura_nome", disabled=usar_dados_sojicultor)
+        with assinatura_col_b:
+            assinatura_data = st.text_input("Data", value=data_emissao.strftime("%d/%m/%Y"), key="assinatura_data")
+            assinatura_cpf = st.text_input("CPF", value="", key="assinatura_cpf", disabled=usar_dados_sojicultor)
+        with assinatura_col_c:
+            assinatura_local = st.text_input("Local", value="", key="assinatura_local", disabled=usar_dados_sojicultor)
+
+    st.button("Atualizar PDF", width="stretch")
 
 st.title("FAI Vegetal")
 st.caption("Base simplificada: o documento agora é gerado como PDF, sem depender da impressão HTML do navegador.")
@@ -962,9 +1016,18 @@ document_data = {
     "ocorrencia_ferrugem_status": ocorrencia_ferrugem_status.strip(),
     "cadastro_safrinha_status": cadastro_safrinha_status.strip(),
     "ocorrencia_laboratorio_status": ocorrencia_laboratorio_status.strip(),
+    "data_plantio": data_plantio.strip(),
+    "laboratorio": laboratorio.strip(),
+    "outros_cultivos_safrinha": outros_cultivos_safrinha.strip(),
+    "estimativa_perda": estimativa_perda.strip(),
     "origem_propria": origem_propria,
     "origem_empresa": origem_empresa,
     "origem_outra": origem_outra,
+    "assinatura_horario": assinatura_horario.strip(),
+    "assinatura_data": assinatura_data.strip(),
+    "assinatura_local": municipio.strip() if usar_dados_sojicultor else assinatura_local.strip(),
+    "assinatura_nome": sojicultor.strip() if usar_dados_sojicultor else assinatura_nome.strip(),
+    "assinatura_cpf": cpf.strip() if usar_dados_sojicultor else assinatura_cpf.strip(),
 }
 
 pdf_bytes = build_pdf(document_data)
