@@ -968,7 +968,7 @@ with st.container():
         with assinatura_col_c:
             assinatura_local = st.text_input("Local", value="", key="assinatura_local", disabled=usar_dados_sojicultor)
 
-    st.button("Atualizar PDF", width="stretch")
+    st.button("Atulizar FAI", width="stretch")
 
 st.title("FAI Vegetal")
 st.caption("Base simplificada: o documento agora é gerado como PDF, sem depender da impressão HTML do navegador.")
@@ -1031,19 +1031,12 @@ document_data = {
 }
 
 pdf_bytes = build_pdf(document_data)
-left_col, right_col = st.columns([1, 1])
-with left_col:
-    st.download_button(
-        "Baixar PDF",
-        data=pdf_bytes,
-        file_name="fai-vegetal.pdf",
-        mime="application/pdf",
-        width="stretch",
-    )
-
-with right_col:
-    st.write(f"Data do documento: `{document_data['data_emissao']}`")
-    st.write(f"Fonte do titulo: `{FONT_BOLD}` em `11.5pt`")
-
 preview_png = render_pdf_preview(pdf_bytes)
 st.image(preview_png, width="stretch")
+st.download_button(
+    "Baixar PDF",
+    data=pdf_bytes,
+    file_name="fai-vegetal.pdf",
+    mime="application/pdf",
+    width="stretch",
+)
