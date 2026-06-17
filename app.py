@@ -308,9 +308,14 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.rect(x, seventh_top_y - row_h, width, row_h, stroke=1, fill=0)
     cnv.line(x + coord_label_w, seventh_top_y, x + coord_label_w, seventh_top_y - row_h)
     cnv.line(x + coord_label_w + coord_half_w, seventh_top_y, x + coord_label_w + coord_half_w, seventh_top_y - row_h)
+    coord_text_y = seventh_top_y - (row_h / 2) - 2
     cnv.drawString(x + 2, seventh_top_y - 6, "COORDENADA DA VISITA:")
-    cnv.drawString(x + coord_label_w + 2, seventh_top_y - 6, f"S {data['coord_s']}".strip())
-    cnv.drawString(x + coord_label_w + coord_half_w + 2, seventh_top_y - 6, f"W {data['coord_w']}".strip())
+    cnv.drawString(x + coord_label_w + 2, seventh_top_y - 6, "S")
+    draw_fitted_fill(cnv, x + coord_label_w + 8, coord_text_y, coord_half_w - 10, data["coord_s"])
+    cnv.setFont(FONT_REGULAR, 5)
+    cnv.drawString(x + coord_label_w + coord_half_w + 2, seventh_top_y - 6, "W")
+    draw_fitted_fill(cnv, x + coord_label_w + coord_half_w + 8, coord_text_y, coord_half_w - 10, data["coord_w"])
+    cnv.setFont(FONT_REGULAR, 5)
 
     eighth_top_y = seventh_top_y - row_h
     confirm_start_x = x + coord_label_w + coord_half_w
@@ -325,9 +330,11 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.line(confirm_start_x + (confirm_cell_w * 3), eighth_top_y, confirm_start_x + (confirm_cell_w * 3), eighth_top_y - row_h)
     cnv.drawString(x + 2, eighth_top_y - 6, "COORDENADA DA PROPRIEDADE CONFERE COM A INFORMADA NO SISTEMA?")
     cnv.drawString(confirm_start_x + 2, eighth_top_y - 6, "SIM")
-    cnv.drawString(confirm_start_x + confirm_cell_w + 2, eighth_top_y - 6, sim_mark)
+    draw_fitted_fill(cnv, confirm_start_x + confirm_cell_w + 2, eighth_top_y - 6, confirm_cell_w - 4, sim_mark)
+    cnv.setFont(FONT_REGULAR, 5)
     cnv.drawString(confirm_start_x + (confirm_cell_w * 2) + 2, eighth_top_y - 6, "NÃO")
-    cnv.drawString(confirm_start_x + (confirm_cell_w * 3) + 2, eighth_top_y - 6, nao_mark)
+    draw_fitted_fill(cnv, confirm_start_x + (confirm_cell_w * 3) + 2, eighth_top_y - 6, confirm_cell_w - 4, nao_mark)
+    cnv.setFont(FONT_REGULAR, 5)
 
     cnv.restoreState()
     return row_h * 8
@@ -838,10 +845,35 @@ with st.form("fai_pdf_form"):
         with col_c:
             email = st.text_input("e-mail", value="")
             fone = st.text_input("Fone", value="")
-            coord_s = st.text_input("Coordenada S", value="")
-            coord_w = st.text_input("Coordenada W", value="")
+            coord_s = st.text_input("Coordenada da visita - S", value="")
+            coord_w = st.text_input("Coordenada da visita - W", value="")
             coord_confere = st.selectbox("Coordenada confere no sistema", yes_no_options, index=0)
             uf = st.text_input("UF", value="")
+
+    with st.expander("Situações verificadas", expanded=True):
+        cadastro_idaron_cols = st.columns([2, 1, 1])
+        with cadastro_idaron_cols[0]:
+            st.write("Área fiscalizada possui cadastro no sistema da Agência IDARON")
+        with cadastro_idaron_cols[1]:
+            cadastro_idaron_sim = st.checkbox("SIM", key="cadastro_idaron_sim")
+        with cadastro_idaron_cols[2]:
+            cadastro_idaron_nao = st.checkbox("NÃO", key="cadastro_idaron_nao")
+
+        cadastro_prazo_cols = st.columns([2, 1, 1])
+        with cadastro_prazo_cols[0]:
+            st.write("Cadastro realizado dentro do prazo oficial")
+        with cadastro_prazo_cols[1]:
+            cadastro_prazo_sim = st.checkbox("SIM", key="cadastro_prazo_sim")
+        with cadastro_prazo_cols[2]:
+            cadastro_prazo_nao = st.checkbox("NÃO", key="cadastro_prazo_nao")
+
+        notificacao_produtor_checked = st.checkbox(
+            "Fica o produtor notificado a realizar o DESVITALIZAR em um prazo de 10 dias.",
+            value=False,
+        )
+
+        cadastro_idaron_status = "SIM" if cadastro_idaron_sim else "NÃO" if cadastro_idaron_nao else ""
+        cadastro_prazo_status = "SIM" if cadastro_prazo_sim else "NÃO" if cadastro_prazo_nao else ""
 
     with st.expander("OBSERVAÇÕES ADICIONAIS,", expanded=True):
         titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
@@ -858,9 +890,6 @@ with st.form("fai_pdf_form"):
 
         ver_a, ver_b = st.columns(2)
         with ver_a:
-            cadastro_idaron_status = st.selectbox("Área possui cadastro na Agência IDARON", yes_no_options, index=0)
-            cadastro_prazo_status = st.selectbox("Cadastro realizado dentro do prazo oficial", yes_no_options, index=0)
-            notificacao_produtor_checked = st.checkbox("Marcar notificação do produtor", value=False)
             irregularidade_checked = st.checkbox("Marcar irregularidade / auto de infração", value=False)
         with ver_b:
             monitoramento_ferrugem_status = st.selectbox("Realiza monitoramento da ferrugem", yes_no_options, index=0)
