@@ -980,7 +980,7 @@ with st.container():
 
     st.button("Atulizar FAI", width="stretch")
 
-st.title("FAI Vegetal")
+st.title("FAI - Fiscalização do vazio sanitário da Soja")
 
 document_data = {
     "numero": numero.strip(),
