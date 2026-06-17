@@ -846,7 +846,7 @@ register_fonts()
 
 yes_no_options = ["", "SIM", "NÃO"]
 
-st.header("Formulário do PDF")
+st.header("FAI - Fiscalização do vazio sanitário da Soja")
 with st.container():
     with st.expander("Da IDARON:", expanded=True):
         col_a, col_b, col_c = st.columns(3)
@@ -980,7 +980,7 @@ with st.container():
 
     st.button("Atulizar FAI", width="stretch")
 
-st.title("FAI - Fiscalização do vazio sanitário da Soja")
+st.title("FAI")
 
 document_data = {
     "numero": numero.strip(),
