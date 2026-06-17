@@ -185,13 +185,17 @@ def draw_compact_info_block(cnv: canvas.Canvas, x: float, top_y: float, width: f
 def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float, data: dict[str, str]) -> float:
     row_h = 8 * mm
     code_col_w = 42 * mm
+    property_name_label_w = 18 * mm
+    logradouro_label_w = 22 * mm
     municipio_label_w = 18 * mm
     area_label_w = 38 * mm
     soja_label_w = 33 * mm
     sisveg_label_w = 28 * mm
     sisveg_value_w = 24 * mm
+    sojicultor_label_w = 20 * mm
     cpf_label_w = 10 * mm
     cpf_value_w = 30 * mm
+    email_label_w = 14 * mm
     fone_label_w = 12 * mm
     fone_value_w = 35 * mm
     coord_label_w = 48 * mm
@@ -200,53 +204,59 @@ def draw_property_block(cnv: canvas.Canvas, x: float, top_y: float, width: float
     cnv.setFont(FONT_REGULAR, 5)
 
     cnv.rect(x, top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + property_name_label_w, top_y, x + property_name_label_w, top_y - row_h)
     cnv.line(x + width - code_col_w, top_y, x + width - code_col_w, top_y - row_h)
-    cnv.drawString(x + 2, top_y - 6, f"NOME DA PROPRIEDADE: {data['propriedade']}".strip())
+    cnv.drawString(x + 2, top_y - 5 - (2 * mm), "NOME DA")
+    cnv.drawString(x + 2, top_y - 11 - (2 * mm), "PROPRIEDADE:")
+    cnv.drawString(x + property_name_label_w + 2, top_y - 6, data["propriedade"])
     cnv.drawString(x + width - code_col_w + 2, top_y - 6, f"COD. PROPRIEDADE: {data['cod_propriedade']}".strip())
 
     second_top_y = top_y - row_h
     cnv.rect(x, second_top_y - row_h, width, row_h, stroke=1, fill=0)
-    cnv.drawString(
-        x + 2,
-        second_top_y - 6,
-        f"LOGRA DOURO (Setor/Lh/Lt...): {data['logradouro']}".strip(),
-    )
+    cnv.line(x + logradouro_label_w, second_top_y, x + logradouro_label_w, second_top_y - row_h)
+    cnv.drawString(x + 2, second_top_y - 5 - (2 * mm), "LOGRADOURO")
+    cnv.drawString(x + 2, second_top_y - 11 - (2 * mm), "(Setor/Lh/Lt...):")
+    cnv.drawString(x + logradouro_label_w + 2, second_top_y - 6 - (2 * mm), data["logradouro"])
 
     third_top_y = second_top_y - row_h
     cnv.rect(x, third_top_y - row_h, width, row_h, stroke=1, fill=0)
     cnv.line(x + municipio_label_w, third_top_y, x + municipio_label_w, third_top_y - row_h)
     cnv.line(x + width - area_label_w, third_top_y, x + width - area_label_w, third_top_y - row_h)
     cnv.line(x + width - 19 * mm, third_top_y, x + width - 19 * mm, third_top_y - row_h)
-    cnv.drawString(x + 2, third_top_y - 6, "MUNICÍPIO:")
-    cnv.drawString(x + municipio_label_w + 2, third_top_y - 6, data["municipio"])
-    cnv.drawString(x + width - area_label_w + 2, third_top_y - 6, "Área da propriedade (ha):")
-    cnv.drawString(x + width - 19 * mm + 2, third_top_y - 6, data["area_propriedade"])
+    cnv.drawString(x + 2, third_top_y - 6 - (2 * mm), "MUNICÍPIO:")
+    cnv.drawString(x + municipio_label_w + 2, third_top_y - 6 - (2 * mm), data["municipio"])
+    cnv.drawString(x + width - area_label_w + 2, third_top_y - 6 - (2 * mm), "Área da propriedade (ha):")
+    cnv.drawString(x + width - 19 * mm + 2, third_top_y - 6 - (2 * mm), data["area_propriedade"])
 
     fourth_top_y = third_top_y - row_h
     cnv.rect(x, fourth_top_y - row_h, width, row_h, stroke=1, fill=0)
     cnv.line(x + soja_label_w, fourth_top_y, x + soja_label_w, fourth_top_y - row_h)
     cnv.line(x + width - sisveg_label_w - sisveg_value_w, fourth_top_y, x + width - sisveg_label_w - sisveg_value_w, fourth_top_y - row_h)
     cnv.line(x + width - sisveg_value_w, fourth_top_y, x + width - sisveg_value_w, fourth_top_y - row_h)
-    cnv.drawString(x + 2, fourth_top_y - 6, "Área de soja cadastrada (ha):")
-    cnv.drawString(x + soja_label_w + 2, fourth_top_y - 6, data["area_soja_cadastrada"])
-    cnv.drawString(x + width - sisveg_label_w - sisveg_value_w + 2, fourth_top_y - 6, "COD. SISVEGETAL:")
-    cnv.drawString(x + width - sisveg_value_w + 2, fourth_top_y - 6, data["cod_sisvegetal"])
+    cnv.drawString(x + 2, fourth_top_y - 6 - (2 * mm), "Área de soja cadastrada (ha):")
+    cnv.drawString(x + soja_label_w + 2, fourth_top_y - 6 - (2 * mm), data["area_soja_cadastrada"])
+    cnv.drawString(x + width - sisveg_label_w - sisveg_value_w + 2, fourth_top_y - 6 - (2 * mm), "COD. SISVEGETAL:")
+    cnv.drawString(x + width - sisveg_value_w + 2, fourth_top_y - 6 - (2 * mm), data["cod_sisvegetal"])
 
     fifth_top_y = fourth_top_y - row_h
     cnv.rect(x, fifth_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + sojicultor_label_w, fifth_top_y, x + sojicultor_label_w, fifth_top_y - row_h)
     cnv.line(x + width - cpf_label_w - cpf_value_w, fifth_top_y, x + width - cpf_label_w - cpf_value_w, fifth_top_y - row_h)
     cnv.line(x + width - cpf_value_w, fifth_top_y, x + width - cpf_value_w, fifth_top_y - row_h)
-    cnv.drawString(x + 2, fifth_top_y - 6, f"SOJICULTOR: {data['sojicultor']}".strip())
-    cnv.drawString(x + width - cpf_label_w - cpf_value_w + 2, fifth_top_y - 6, "CPF:")
-    cnv.drawString(x + width - cpf_value_w + 2, fifth_top_y - 6, data["cpf"])
+    cnv.drawString(x + 2, fifth_top_y - 6 - (2 * mm), "SOJICULTOR:")
+    cnv.drawString(x + sojicultor_label_w + 2, fifth_top_y - 6 - (2 * mm), data["sojicultor"])
+    cnv.drawString(x + width - cpf_label_w - cpf_value_w + 2, fifth_top_y - 6 - (2 * mm), "CPF:")
+    cnv.drawString(x + width - cpf_value_w + 2, fifth_top_y - 6 - (2 * mm), data["cpf"])
 
     sixth_top_y = fifth_top_y - row_h
     cnv.rect(x, sixth_top_y - row_h, width, row_h, stroke=1, fill=0)
+    cnv.line(x + email_label_w, sixth_top_y, x + email_label_w, sixth_top_y - row_h)
     cnv.line(x + width - fone_label_w - fone_value_w, sixth_top_y, x + width - fone_label_w - fone_value_w, sixth_top_y - row_h)
     cnv.line(x + width - fone_value_w, sixth_top_y, x + width - fone_value_w, sixth_top_y - row_h)
-    cnv.drawString(x + 2, sixth_top_y - 6, f"e-mail: {data['email']}".strip())
-    cnv.drawString(x + width - fone_label_w - fone_value_w + 2, sixth_top_y - 6, "Fone:")
-    cnv.drawString(x + width - fone_value_w + 2, sixth_top_y - 6, data["fone"])
+    cnv.drawString(x + 2, sixth_top_y - 6 - (2 * mm), "e-mail:")
+    cnv.drawString(x + email_label_w + 2, sixth_top_y - 6 - (2 * mm), data["email"])
+    cnv.drawString(x + width - fone_label_w - fone_value_w + 2, sixth_top_y - 6 - (2 * mm), "Fone:")
+    cnv.drawString(x + width - fone_value_w + 2, sixth_top_y - 6 - (2 * mm), data["fone"])
 
     seventh_top_y = sixth_top_y - row_h
     coord_half_w = (width - coord_label_w) / 2
