@@ -981,7 +981,6 @@ with st.container():
     st.button("Atulizar FAI", width="stretch")
 
 st.title("FAI Vegetal")
-st.caption("Base simplificada: o documento agora é gerado como PDF, sem depender da impressão HTML do navegador.")
 
 document_data = {
     "numero": numero.strip(),
