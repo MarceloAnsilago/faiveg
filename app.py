@@ -768,12 +768,14 @@ def build_pdf(data: dict[str, str]) -> bytes:
         ],
     )
     y -= verification_line_h + 1 * mm
+    auto_infracao_numero = data["auto_infracao_numero"] or "______"
+    auto_infracao_data = data["auto_infracao_data"] or "__/___/20__"
     empty_row_h = draw_standard_text_row(
         cnv,
         LEFT_MARGIN,
         y,
         CONTENT_WIDTH,
-        "A(s) notifica\u00e7\u00e3o(\u00f5es) n\u00e3o foi(ram) atendida(s) dentro do prazo, caracterizando irregularidade(s) e o descumprimento da Instru\u00e7\u00e3o Normativa n\u00b0 10/2024-IDARON, tendo sido lavrado Auto de Infra\u00e7\u00e3o N\u00b0 ______ em __/___/20__",
+        f"A(s) notifica\u00e7\u00e3o(\u00f5es) n\u00e3o foi(ram) atendida(s) dentro do prazo, caracterizando irregularidade(s) e o descumprimento da Instru\u00e7\u00e3o Normativa n\u00b0 10/2024-IDARON, tendo sido lavrado Auto de Infra\u00e7\u00e3o N\u00b0 {auto_infracao_numero} em {auto_infracao_data}",
         checked=bool(data["irregularidade_checked"]),
     )
     y -= empty_row_h + 1 * mm
@@ -875,6 +877,17 @@ with st.form("fai_pdf_form"):
         cadastro_idaron_status = "SIM" if cadastro_idaron_sim else "NÃO" if cadastro_idaron_nao else ""
         cadastro_prazo_status = "SIM" if cadastro_prazo_sim else "NÃO" if cadastro_prazo_nao else ""
 
+    with st.expander("Inf. notificações", expanded=True):
+        irregularidade_checked = st.checkbox(
+            "A(s) notificação(ões) não foi(ram) atendida(s) dentro do prazo",
+            value=False,
+        )
+        infracao_col_a, infracao_col_b = st.columns(2)
+        with infracao_col_a:
+            auto_infracao_numero = st.text_input("Auto de Infração N°", value="")
+        with infracao_col_b:
+            auto_infracao_data = st.text_input("Data do Auto de Infração", value="", placeholder="__/___/20__")
+
     with st.expander("OBSERVAÇÕES ADICIONAIS,", expanded=True):
         titulo = st.text_input("Título", value="FISCALIZAÇÃO DO VAZIO SANITÁRIO DA SOJA")
         subtitulo = st.text_input(
@@ -887,16 +900,11 @@ with st.form("fai_pdf_form"):
             height=180,
             placeholder="Digite aqui o conteúdo que deve sair no PDF.",
         )
-
-        ver_a, ver_b = st.columns(2)
-        with ver_a:
-            irregularidade_checked = st.checkbox("Marcar irregularidade / auto de infração", value=False)
-        with ver_b:
-            monitoramento_ferrugem_status = st.selectbox("Realiza monitoramento da ferrugem", yes_no_options, index=0)
-            cultiva_soja_safrinha_status = st.selectbox("Cultiva soja em safrinha", yes_no_options, index=0)
-            ocorrencia_ferrugem_status = st.selectbox("Ocorrência de ferrugem", yes_no_options, index=0)
-            cadastro_safrinha_status = st.selectbox("Realizou cadastro da safrinha", yes_no_options, index=0)
-            ocorrencia_laboratorio_status = st.selectbox("Ocorrência confirmada por laboratório", yes_no_options, index=0)
+        monitoramento_ferrugem_status = st.selectbox("Realiza monitoramento da ferrugem", yes_no_options, index=0)
+        cultiva_soja_safrinha_status = st.selectbox("Cultiva soja em safrinha", yes_no_options, index=0)
+        ocorrencia_ferrugem_status = st.selectbox("Ocorrência de ferrugem", yes_no_options, index=0)
+        cadastro_safrinha_status = st.selectbox("Realizou cadastro da safrinha", yes_no_options, index=0)
+        ocorrencia_laboratorio_status = st.selectbox("Ocorrência confirmada por laboratório", yes_no_options, index=0)
 
         origem_cols = st.columns(3)
         with origem_cols[0]:
@@ -947,6 +955,8 @@ document_data = {
     "cadastro_prazo_status": cadastro_prazo_status.strip(),
     "notificacao_produtor_checked": notificacao_produtor_checked,
     "irregularidade_checked": irregularidade_checked,
+    "auto_infracao_numero": auto_infracao_numero.strip(),
+    "auto_infracao_data": auto_infracao_data.strip(),
     "monitoramento_ferrugem_status": monitoramento_ferrugem_status.strip(),
     "cultiva_soja_safrinha_status": cultiva_soja_safrinha_status.strip(),
     "ocorrencia_ferrugem_status": ocorrencia_ferrugem_status.strip(),
