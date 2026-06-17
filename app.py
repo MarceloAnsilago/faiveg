@@ -24,10 +24,19 @@ st.markdown(
     """
     <style>
     .stApp .block-container {
-        max-width: 1100px;
+        width: min(100%, 1680px);
+        max-width: none;
         margin-left: auto;
         margin-right: auto;
         padding-top: 1.5rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    @media (max-width: 768px) {
+        .stApp .block-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
     }
     .stApp h1,
     .stApp h2 {
